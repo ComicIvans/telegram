@@ -1,10 +1,19 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'media',
-  content: ['./index.html', './src/**/*.{vue,js,ts}'],
+  content: [
+    './index.html',
+    './src/**/*.{vue,js,ts}',
+  ],
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    require("@tailwindcss/typography"),
+    require("daisyui"),
+  ],
+  daisyui: {
+    themes: ["light", "dark", "cupcake"],
+  },
 }
 

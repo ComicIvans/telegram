@@ -9,5 +9,6 @@
       "@/*": ["./src/*"]
     },
     "module": "esnext",
+    "moduleResolution": "node",
   }
 }

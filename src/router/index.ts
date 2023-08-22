@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useTelegramSessionStore } from '@/stores/telegramSession'
+import { useTelegramClientStore } from '../stores/telegramClient'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,8 +20,8 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const store = useTelegramSessionStore()
-  if (to.path !== '/auth' && !store.stringSession) {
+  const store = useTelegramClientStore()
+  if (to.path !== '/auth' && (!store.client || !store.client.checkAuthorization())) {
     next('/auth')
   } else {
     next()
