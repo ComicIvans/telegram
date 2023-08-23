@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex flex-col bg-base-200">
     <header class="border-b top-0 left-0 w-full fixed z-10">
-      <LoginNav @editApi="editApi = true" :img="imgDGE" :title="'Gestión de los grupos de Telegram'" :can-search="false" />
+      <LoginNav @editApi="editApi = true" :img="logo" :title="'Gestión de los grupos de Telegram'" />
     </header>
     
     <main class="flex flex-col flex-grow items-center pt-24">
@@ -68,7 +68,7 @@ import { useTelegramClientStore } from '@/stores/telegramClient'
 import { useAlertStore } from '@/stores/alertStore'
 import { TelegramClient } from 'telegram'
 import { StringSession } from 'telegram/sessions'
-import imgDGE from '@/assets/images/dge.png'
+import logo from '@/assets/images/logo.png'
 import router from '@/router'
 
 const clientStore = useTelegramClientStore()

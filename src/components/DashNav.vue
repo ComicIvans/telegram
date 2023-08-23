@@ -2,7 +2,7 @@
   <nav class="navbar bg-base-100">
     <div class="navbar-start">
       <div class="w-fit max-w-[100px] mx-5 pt-2 pb-2">
-        <img :src="img" alt="DGE" class="min-w-[100px] max-h-fit">
+        <img :src="img" alt="Logo" class="min-w-[100px] max-h-fit">
       </div>
     </div>
     <div class="navbar-center">
@@ -32,13 +32,13 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IconSettingsFilled } from '@tabler/icons-vue';
+import { IconSettingsFilled } from '@tabler/icons-vue'
 import { useThemeStore } from '@/stores/themeStore'
 import { vOnClickOutside } from '@vueuse/components'
 import { useActiveElement } from '@vueuse/core'
 import { useTelegramAuthStore } from '@/stores/telegramAuth'
 import { useTelegramClientStore } from '@/stores/telegramClient'
-import router from '@/router';
+import router from '@/router'
 
 const clientStore = useTelegramClientStore()
 const authStore = useTelegramAuthStore()
