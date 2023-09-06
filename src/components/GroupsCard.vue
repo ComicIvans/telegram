@@ -38,14 +38,8 @@
               </div>
             </td>
             <td>{{ group.title }}</td>
-            <td v-if="!group.tags || group.tags.length === 0" class="text-center">
-              <button  @click.stop=""><IconCirclePlus /></button>
-            </td>
-            <td v-else v-for="tag in group.tags" :key="group.tags.indexOf(tag)">
-              <div class="badge badge-info gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-4 h-4 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                info
-              </div>
+            <td>
+              <TagSeletor :tags="group.tags" />
             </td>
             <td>{{ group.type }}</td>
           </tr>
@@ -70,6 +64,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import TagSeletor from '@/components/TagSelector.vue'
 import { vOnClickOutside } from '@vueuse/components'
 import { useActiveElement } from '@vueuse/core'
 import { useClipboard, usePermission } from '@vueuse/core'
@@ -80,7 +75,6 @@ import { IconChevronsRight } from '@tabler/icons-vue'
 import { IconChevronsLeft } from '@tabler/icons-vue'
 import { IconReload } from '@tabler/icons-vue'
 import { IconUsersGroup } from '@tabler/icons-vue';
-import { IconCirclePlus } from '@tabler/icons-vue';
 
 const ROWS_PER_PAGE = 50
 
