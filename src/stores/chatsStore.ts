@@ -9,6 +9,7 @@ type Chat = {
   canAddUsersAsAdmin: boolean,
   canAddUsersAsUser: boolean,
   selected: boolean,
+  tags: string[],
 }
 
 export const useChatsStore = defineStore('chatsStore', {

@@ -6,10 +6,10 @@
     
     <main class="flex flex-col flex-grow items-center pt-24">
       <Alert class="mb-4" />
-      <div class="flex flex-grow md:justify-center">
-        <GroupsCard />
+      <div class="flex flex-grow w-10/12 md:justify-center">
+        <GroupsCard class="flex-1" />
         <div class="divider divider-horizontal"></div>
-        <PeopleCard />
+        <PeopleCard class="flex-1" />
       </div>
     </main>
     <Footer class="mt-4" />

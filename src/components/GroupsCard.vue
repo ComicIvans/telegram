@@ -20,6 +20,7 @@
             </th>
             <th>Foto</th>
             <th>Nombre</th>
+            <th>Etiquetas</th>
             <th>Tipo</th>
           </tr>
         </thead>
@@ -37,6 +38,15 @@
               </div>
             </td>
             <td>{{ group.title }}</td>
+            <td v-if="!group.tags || group.tags.length === 0" class="text-center">
+              <button  @click.stop=""><IconCirclePlus /></button>
+            </td>
+            <td v-else v-for="tag in group.tags" :key="group.tags.indexOf(tag)">
+              <div class="badge badge-info gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-4 h-4 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                info
+              </div>
+            </td>
             <td>{{ group.type }}</td>
           </tr>
         </tbody>
@@ -70,6 +80,7 @@ import { IconChevronsRight } from '@tabler/icons-vue'
 import { IconChevronsLeft } from '@tabler/icons-vue'
 import { IconReload } from '@tabler/icons-vue'
 import { IconUsersGroup } from '@tabler/icons-vue';
+import { IconCirclePlus } from '@tabler/icons-vue';
 
 const ROWS_PER_PAGE = 50
 
@@ -99,10 +110,9 @@ async function getAllChats(forceReplace = false) {
       chatsLoading.value = false
       return
     }
-    let result = await clientStore.client.getDialogs()
-    result = result.filter((chat) => {
-      return !chat.isUser && chat.title !== ''
-    })
+    const result = (await clientStore.client.getDialogs()).filter(
+      (chat) => !chat.isUser && chat.title !== ''
+    )
     result.forEach((chat) => {
       if(chat.entity && chat.title && clientStore.client) {
         chatsStore.chats.push({
@@ -113,6 +123,7 @@ async function getAllChats(forceReplace = false) {
           canAddUsersAsAdmin: chat.entity.adminRights && chat.entity.adminRights.inviteUsers ? true : false,
           canAddUsersAsUser: false,
           selected: false,
+          tags: [],
         })
       }
     })
