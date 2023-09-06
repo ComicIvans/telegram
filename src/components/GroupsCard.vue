@@ -38,7 +38,7 @@
               </div>
             </td>
             <td>{{ group.title }}</td>
-            <td>
+            <td @click.stop="">
               <TagSeletor :tags="group.tags" />
             </td>
             <td>{{ group.type }}</td>
@@ -47,14 +47,14 @@
       </table>
     </div>
     <div v-if="totalPages > 1 && totalPages < 5" class="join flex justify-center items-center mb-4">
-      <button v-for="number of pageNumbers" @click="() => currentPage = number" class="join-item btn" :class="currentPage === number ? 'btn-active' : ''">{{ number }}</button>
+      <button v-for="number of pageNumbers" :key="number" @click="() => currentPage = number" class="join-item btn" :class="currentPage === number ? 'btn-active' : ''">{{ number }}</button>
     </div>
     <div v-else-if="totalPages >= 5" class="join flex justify-center items-center mb-4">
       <button @click="() => currentPage = currentPage === 1 ? 1 : currentPage - 1" class="join-item btn"><IconChevronsLeft class="w-5 h-5" /></button>
       <div class="join-item dropdown dropdown-top">
         <label v-on-click-outside="() => showPagesDropdown = false" @click="togglePagesDropdown" tabindex="0" class="btn rounded-none w-28">Página {{ currentPage }}</label>
         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box flex flex-row items-center justify-center max-h-40 overflow-y-auto">
-          <li v-for="number of pageNumbers"><a @click="() => { currentPage = number; activeElement?.blur()}">Página {{ number }}</a></li>
+          <li v-for="number of pageNumbers" :key="number"><a @click="() => { currentPage = number; activeElement?.blur()}">Página {{ number }}</a></li>
         </ul>
       </div>
       <button @click="() => currentPage = currentPage === totalPages ? totalPages : currentPage + 1" class="join-item btn"><IconChevronsRight class="w-5 h-5" /></button>
@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import TagSeletor from '@/components/TagSelector.vue'
 import { vOnClickOutside } from '@vueuse/components'
 import { useActiveElement } from '@vueuse/core'
