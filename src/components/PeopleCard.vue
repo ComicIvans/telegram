@@ -38,6 +38,7 @@ import { IconReload } from '@tabler/icons-vue'
 import { useFileDialog } from '@vueuse/core'
 import { useDropZone } from '@vueuse/core'
 import { useAlertStore } from '@/stores/alertStore'
+import { z } from "zod"
 
 const { files, open, reset, onChange } = useFileDialog()
 const dropZoneRef = ref<HTMLDivElement>()
@@ -55,6 +56,7 @@ function onDrop(files: File[] | null) {
   if(files && files.length > 0) {
     if(files.length === 1) {
       loading.value = true
+      loadFile(files[0])
     } else {
       fileError.value = true
       alertStore.error('No puedes arrastrar más de un archivo')
@@ -70,6 +72,7 @@ onChange((files) => {
   if(files && files.length > 0) {
     if(files.length === 1) {
       loading.value = true
+      loadFile(files[0])
     } else {
       fileError.value = true
       alertStore.error('No puedes elegir más de un archivo')
@@ -79,5 +82,60 @@ onChange((files) => {
     alertStore.error('No se ha podido conseguir el archivo')
   }
 })
+
+function loadFile(file: File) {
+  parseJsonFile(file)
+    .then((data) => {
+      if(areUsers(data)) {
+        console.log(data)
+      } else {
+        fileError.value = true
+        alertStore.error('El archivo no tiene el formato correcto')
+      }
+      loading.value = false
+    })
+    .catch((error) => {
+      loading.value = false
+      fileError.value = true
+      alertStore.error('El archivo no tiene un formato JSON')
+    })
+}
+
+function parseJsonFile(file: File): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result as string)
+        resolve(data)
+      } catch (error) {
+        reject(error)
+      }
+    }
+    reader.onerror = () => {
+      reject(reader.error)
+    }
+    reader.readAsText(file)
+  })
+}
+
+const UserSchema = z.object({
+  first_name: z.string(),
+  last_name: z.string(),
+  phone: z.string(),
+  username: z.string(),
+  tags: z.array(z.string()),
+})
+
+type User = z.infer<typeof UserSchema>
+
+function areUsers(data: any): data is User[] {
+  try {
+    const parsedUsers = UserSchema.array().parse(data)
+    return parsedUsers.length === data.length
+  } catch (error) {
+    return false
+  }
+}
 
 </script>

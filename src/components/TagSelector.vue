@@ -11,13 +11,13 @@
     {{ tag }}
   </div>
   <div class="text-center">
-    <label :onclick="`mod${groupName.replace('-', '_')}.showModal()`" tabindex="0"
+    <label :onclick="`mod${groupId.replace('-', '_')}.showModal()`" tabindex="0"
       ><IconCirclePlus
     /></label>
   </div>
-  <dialog :id="`mod${groupName.replace('-', '_')}`" class="modal">
+  <dialog :id="`mod${groupId.replace('-', '_')}`" class="modal">
     <div class="modal-box">
-      <h3 class="font-bold text-lg pb-4">Modificar las etiquetas del grupo</h3>
+      <h3 class="font-bold text-lg pb-4">Etiquetas para {{ groupName }}</h3>
       <div class="form-control" v-for="tag in availableTags" :key="tag">
         <label class="label cursor-pointer justify-start">
           <input
@@ -42,7 +42,7 @@
       <div class="modal-action">
         <form method="dialog">
           <!-- if there is a button in form, it will close the modal -->
-          <button class="btn">Cerrar</button>
+          <button class="btn btn-circle"><IconX /></button>
         </form>
       </div>
     </div>
@@ -50,12 +50,13 @@
 </template>
 
 <script setup lang="ts">
-import { IconCirclePlus, IconCircleX } from '@tabler/icons-vue'
+import { IconCirclePlus, IconCircleX, IconX } from '@tabler/icons-vue'
 import { useTagsStore } from '@/stores/tagsStore'
 import uniqolor from 'uniqolor'
 import { computed, ref } from 'vue'
 
 const props = defineProps<{
+  groupId: string
   groupName: string
   tags: string[]
 }>()

@@ -72,7 +72,7 @@
             </td>
             <td>{{ group.title }}</td>
             <td @click.stop="">
-              <TagSeletor v-model:tags="group.tags" :group-name="group.id.toString()" />
+              <TagSeletor v-model:tags="group.tags" :group-name="group.title" :group-id="group.id.toString()" />
             </td>
             <td>{{ group.type }}</td>
           </tr>

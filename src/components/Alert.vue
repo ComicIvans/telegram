@@ -11,14 +11,14 @@
 </template>
 
 <script setup lang="ts">
-import { IconX } from '@tabler/icons-vue';
-import { useAlertStore } from '@/stores/alertStore';
-import { ref } from 'vue';
+import { IconX } from '@tabler/icons-vue'
+import { useAlertStore } from '@/stores/alertStore'
+import { ref } from 'vue'
 
-const alertStore = useAlertStore();
+const alertStore = useAlertStore()
 
 function close() {
-  alertStore.clear();
+  alertStore.clear()
 }
 
 </script>
