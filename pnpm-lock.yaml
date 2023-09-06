@@ -38,6 +38,9 @@ dependencies:
   theme-change:
     specifier: ^2.5.0
     version: 2.5.0
+  uniqolor:
+    specifier: ^1.1.0
+    version: 1.1.0
   validator:
     specifier: ^13.11.0
     version: 13.11.0
@@ -3012,6 +3015,10 @@ packages:
       has-symbols: 1.0.3
       which-boxed-primitive: 1.0.2
     dev: true
+
+  /uniqolor@1.1.0:
+    resolution: {integrity: sha512-j2XyokF24fsj+L5u6fbu4rM3RQc6VWJuAngYM2k0ZdG3yiVxt0smLkps2GmQIYqK8VkELGdM9vFU/HfOkK/zoQ==}
+    dev: false
 
   /update-browserslist-db@1.0.11(browserslist@4.21.10):
     resolution: {integrity: sha512-dCwEFf0/oT85M1fHBg4F0jtLwJrutGoHSQXCh7u4o2t1drG+c0a9Flnqww6XUKSfQMPpJBRjU8d4RXB09qtvaA==}
