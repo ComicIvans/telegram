@@ -37,109 +37,13 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useFileDialog } from '@vueuse/core'
 import { useDropZone } from '@vueuse/core'
-import { useAlertStore } from '@/stores/alertStore'
-import { useUsersStore } from '@/stores/usersStore'
-import { User, UserSchema } from '@/schema'
+import { useFileSelector } from '@/composables/useFileSelector'
 
-const { files, open, reset, onChange } = useFileDialog()
 const dropZoneRef = ref<HTMLDivElement>()
-const alertStore = useAlertStore()
-const usersStore = useUsersStore()
 
-const { isOverDropZone } = useDropZone(dropZoneRef, onDrop)
-const fileError = ref(false)
-const loading = ref(false)
-
-function onDrop(files: File[] | null) {
-  fileError.value = false
-  alertStore.clear()
-  if (files && files.length > 0) {
-    if (files.length === 1) {
-      loading.value = true
-      loadFile(files[0])
-    } else {
-      fileError.value = true
-      alertStore.error('No puedes arrastrar más de un archivo')
-    }
-  } else {
-    fileError.value = true
-    alertStore.error('No se ha podido conseguir el archivo')
-  }
-}
-
-onChange((files) => {
-  alertStore.clear()
-  if (files && files.length > 0) {
-    if (files.length === 1) {
-      loading.value = true
-      loadFile(files[0])
-    } else {
-      fileError.value = true
-      alertStore.error('No puedes elegir más de un archivo')
-    }
-  } else {
-    fileError.value = true
-    alertStore.error('No se ha podido conseguir el archivo')
-  }
-})
-
-function loadFile(file: File) {
-  parseJsonFile(file)
-    .then((data) => {
-      if (areUsers(data)) {
-        usersStore.users = []
-        data.forEach((user) => {
-          usersStore.users.push({
-            id: null,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            username: user.username,
-            phone: user.phone,
-            photo: null,
-            selected: false,
-            failedTelegram: false,
-            tags: user.tags
-          })
-        })
-      } else {
-        fileError.value = true
-        alertStore.error('El archivo no tiene el formato correcto')
-      }
-      loading.value = false
-    })
-    .catch((error) => {
-      loading.value = false
-      fileError.value = true
-      alertStore.error('El archivo no tiene un formato JSON')
-    })
-}
-
-function parseJsonFile(file: File): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result as string)
-        resolve(data)
-      } catch (error) {
-        reject(error)
-      }
-    }
-    reader.onerror = () => {
-      reject(reader.error)
-    }
-    reader.readAsText(file)
-  })
-}
-
-function areUsers(data: any): data is User[] {
-  try {
-    const parsedUsers = UserSchema.array().parse(data)
-    return parsedUsers.length === data.length
-  } catch (error) {
-    return false
-  }
-}
+const { isOverDropZone } = useDropZone(dropZoneRef, (files) =>
+  fileHandler(files, `No puedes arrastrar más de un archivo`)
+)
+const { loading, fileError, fileHandler, dialogOpen: open } = useFileSelector(dropZoneRef)
 </script>
