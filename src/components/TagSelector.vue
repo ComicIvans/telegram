@@ -6,9 +6,11 @@
       class="badge h-fit text-center"
       :class="tagColor(tag).isLight ? 'text-gray-950' : 'text-gray-50'"
       :style="{ 'background-color': tagColor(tag).color }"
-      @click="updateTag(tag)"
     >
-      <IconCircleX class="inline-block w-4 h-4 -ml-2 mr-1 stroke-current" />
+      <IconCircleX
+        class="inline-block min-h-4 aspect-square -ml-2 mr-1 stroke-current"
+        @click="updateTag(tag)"
+      />
       {{ tag }}
     </div>
     <div class="">
@@ -56,6 +58,7 @@ import { IconCirclePlus, IconCircleX, IconX } from '@tabler/icons-vue'
 import { useTagsStore } from '@/stores/tagsStore'
 import uniqolor from 'uniqolor'
 import { computed, ref } from 'vue'
+import { useNotification } from '@kyvg/vue3-notification'
 
 const props = defineProps<{
   groupId: string
@@ -65,10 +68,15 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:tags'])
 
+const { notify } = useNotification()
+
 const availableTags = useTagsStore().tags
 
 const updateTag = (tag: string) => {
-  console.log('changed')
+  notify({
+    text: 'Etiqueta actualizada',
+    type: 'alert-info'
+  })
   if (props.tags.includes(tag)) {
     emit(
       'update:tags',
