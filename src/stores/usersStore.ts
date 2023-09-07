@@ -1,12 +1,14 @@
 import { defineStore } from 'pinia'
 
 type User = {
-  id: BigInt,
+  id: BigInt | null,
   first_name: string,
   last_name: string,
   username: string,
+  phone: string,
   photo: string | null,
   selected: boolean,
+  failedTelegram: boolean,
   tags: string[],
 }
 

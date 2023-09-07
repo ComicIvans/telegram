@@ -41,10 +41,13 @@ import { useFileDialog } from '@vueuse/core'
 import { useDropZone } from '@vueuse/core'
 import { useAlertStore } from '@/stores/alertStore'
 import { z } from 'zod'
+import { useUsersStore } from '@/stores/usersStore'
+import { users } from 'telegram/client'
 
 const { files, open, reset, onChange } = useFileDialog()
 const dropZoneRef = ref<HTMLDivElement>()
 const alertStore = useAlertStore()
+const usersStore = useUsersStore()
 
 const { isOverDropZone } = useDropZone(dropZoneRef, onDrop)
 const fileError = ref(false)
@@ -87,7 +90,20 @@ function loadFile(file: File) {
   parseJsonFile(file)
     .then((data) => {
       if (areUsers(data)) {
-        console.log(data)
+        usersStore.users = []
+        data.forEach((user) => {
+          usersStore.users.push({
+            id: null,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            username: user.username,
+            phone: user.phone,
+            photo: null,
+            selected: false,
+            failedTelegram: false,
+            tags: user.tags
+          })
+        })
       } else {
         fileError.value = true
         alertStore.error('El archivo no tiene el formato correcto')
