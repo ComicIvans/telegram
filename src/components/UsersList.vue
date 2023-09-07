@@ -83,48 +83,29 @@ const usersStore = useUsersStore()
 
 const checkAll = ref(false)
 const currentPage = ref(1)
-const chatsLoading = ref(true)
+const usersLoading = ref(true)
 
 const { copied, isSupported, copy } = useClipboard()
 const permissionRead = usePermission('clipboard-read')
 const permissionWrite = usePermission('clipboard-write')
 
-async function getAllChats(forceReplace = false) {
+async function getAllUsers(forceReplace = false) {
   if (!clientStore.client) {
     router.replace('/auth')
   } else {
     if (
       forceReplace ||
-      !chatsStore.date ||
-      chatsStore.chats.length === 0 ||
-      (chatsStore.date && chatsStore.date < Date.now() - 86400000)
+      !usersStore.date ||
+      (usersStore.date && usersStore.date < Date.now() - 86400000)
     ) {
-      chatsLoading.value = true
-      chatsStore.date = Date.now()
-      chatsStore.chats = []
+      usersLoading.value = true
+      usersStore.date = Date.now()
     } else {
-      chatsLoading.value = false
+      usersLoading.value = false
       return
     }
-    const result = (await clientStore.client.getDialogs()).filter(
-      (chat) => !chat.isUser && chat.title !== ''
-    )
-    result.forEach((chat) => {
-      if (chat.entity && chat.title && clientStore.client) {
-        chatsStore.chats.push({
-          id: chat.id,
-          title: chat.title,
-          type: chat.isChannel ? 'Canal' : chat.isGroup ? 'Grupo' : 'Desconocido',
-          photo: null,
-          canAddUsersAsAdmin:
-            chat.entity.adminRights && chat.entity.adminRights.inviteUsers ? true : false,
-          canAddUsersAsUser: false,
-          selected: false,
-          tags: []
-        })
-      }
-    })
-    chatsLoading.value = false
+    //const result =
+    usersLoading.value = false
     getPhotos(true)
   }
 }
@@ -169,5 +150,5 @@ const paginatedUsers = computed(() => {
   return filteredUsers.value.slice(startIndex, endIndex)
 })
 
-//getAllUsers()
+getAllUsers()
 </script>
