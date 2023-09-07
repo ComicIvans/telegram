@@ -66,13 +66,15 @@ import { useClipboard, usePermission } from '@vueuse/core'
 import { useTelegramClientStore } from '@/stores/telegramClient'
 import { useChatsStore } from '@/stores/chatsStore'
 import { IconUsersGroup } from '@tabler/icons-vue'
-import router from '@/router'
+import { useRouter } from 'vue-router'
 
 defineProps<{
   searchTerm: string
 }>()
 
 const ROWS_PER_PAGE = 50
+
+const router = useRouter()
 
 const clientStore = useTelegramClientStore()
 const chatsStore = useChatsStore()
