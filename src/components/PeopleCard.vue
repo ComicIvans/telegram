@@ -8,8 +8,9 @@
         placeholder="Buscar"
         class="input input-bordered flex-grow rounded-full w-auto m-4"
       />
-      <span v-if="loading" class="mr-5 loading loading-spinner loading-md"></span>
-      <button v-else class="mr-5 btn btn-circle btn-ghost"><IconReload /></button>
+      <button @click="() => (usersStore.users = [])" class="mr-5 btn btn-circle btn-ghost">
+        <IconX />
+      </button>
     </div>
     <div class="divider mx-auto w-11/12 m-2"></div>
     <FileSelector v-if="usersStore.users.length === 0" />
@@ -19,7 +20,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IconReload } from '@tabler/icons-vue'
+import { IconX } from '@tabler/icons-vue'
 import FileSelector from './FileSelector.vue'
 import UsersList from './UsersList.vue'
 import { useUsersStore } from '@/stores/usersStore'
@@ -27,5 +28,4 @@ import { useUsersStore } from '@/stores/usersStore'
 const usersStore = useUsersStore()
 
 const searchTerm = ref('')
-const loading = ref(false)
 </script>
