@@ -40,9 +40,8 @@ import { ref } from 'vue'
 import { useFileDialog } from '@vueuse/core'
 import { useDropZone } from '@vueuse/core'
 import { useAlertStore } from '@/stores/alertStore'
-import { z } from 'zod'
 import { useUsersStore } from '@/stores/usersStore'
-import { users } from 'telegram/client'
+import { User, UserSchema } from '@/schema'
 
 const { files, open, reset, onChange } = useFileDialog()
 const dropZoneRef = ref<HTMLDivElement>()
@@ -134,16 +133,6 @@ function parseJsonFile(file: File): Promise<any> {
     reader.readAsText(file)
   })
 }
-
-const UserSchema = z.object({
-  first_name: z.string(),
-  last_name: z.string(),
-  phone: z.string(),
-  username: z.string(),
-  tags: z.array(z.string())
-})
-
-type User = z.infer<typeof UserSchema>
 
 function areUsers(data: any): data is User[] {
   try {
