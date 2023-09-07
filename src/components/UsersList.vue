@@ -15,37 +15,40 @@
       </thead>
       <tbody>
         <tr
-          v-for="group in paginatedGroups"
-          :key="paginatedGroups.indexOf(group)"
+          v-for="user in paginatedUsers"
+          :key="paginatedUsers.indexOf(user)"
           class="hover"
-          @click="group.selected = !group.selected"
+          @click="user.selected = !user.selected"
         >
           <td>
             <label>
-              <input :checked="group.selected" type="checkbox" class="checkbox" />
+              <input :checked="user.selected" type="checkbox" class="checkbox" />
             </label>
           </td>
           <td>
             <div
+              v-if="user.id"
               class="tooltip"
-              :data-tip="isSupported && copied ? '¡Copiado!' : 'ID: ' + group.id"
+              :data-tip="isSupported && copied ? '¡Copiado!' : 'ID: ' + user.id"
               @click.stop="
                 () => {
-                  if (isSupported) copy(group.id.toString())
+                  if (isSupported) copy(user.id.toString())
                 }
               "
             >
-              <img v-if="group.photo" class="w-12 h-12 rounded-full" :src="group.photo" />
+              <img v-if="user.photo" class="w-12 h-12 rounded-full" :src="user.photo" />
               <IconUsersGroup v-else class="w-12 h-12" />
             </div>
           </td>
-          <td>{{ group.title }}</td>
+          <td>{{ user.first_name + ' ' + user.last_name }}</td>
           <td @click.stop="">
             <TagSeletor
-              v-model:tags="group.tags"
-              :group-name="group.title"
-              :group-id="group.id.toString()"
+              v-if="user.id"
+              v-model:tags="user.tags"
+              :name="user.first_name + ' ' + user.last_name"
+              :id="user.id.toString()"
             />
+            <IconCircleX v-else />
           </td>
         </tr>
       </tbody>
@@ -64,11 +67,11 @@ import TagSeletor from '@/components/TagSelector.vue'
 import PageSelector from '@/components/PageSelector.vue'
 import { useClipboard, usePermission } from '@vueuse/core'
 import { useTelegramClientStore } from '@/stores/telegramClient'
-import { useChatsStore } from '@/stores/chatsStore'
-import { IconUsersGroup } from '@tabler/icons-vue'
+import { useUsersStore } from '@/stores/usersStore'
+import { IconUsersGroup, IconCircleX } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 
-defineProps<{
+const props = defineProps<{
   searchTerm: string
 }>()
 
@@ -77,7 +80,7 @@ const ROWS_PER_PAGE = 50
 const router = useRouter()
 
 const clientStore = useTelegramClientStore()
-const chatsStore = useChatsStore()
+const usersStore = useUsersStore()
 
 const checkAll = ref(false)
 const currentPage = ref(1)
@@ -128,14 +131,14 @@ async function getAllChats(forceReplace = false) {
 }
 
 async function getPhotos(forceReplace = false) {
-  const chats = forceReplace ? chatsStore.chats : paginatedGroups.value
-  chats.forEach(async (chat) => {
-    if (chat.id && clientStore.client && (!chat.photo || forceReplace)) {
-      const result = await clientStore.client.downloadProfilePhoto(chat.id)
+  const users = forceReplace ? usersStore.users : paginatedUsers.value
+  users.forEach(async (user) => {
+    if (user.id && clientStore.client && (!user.photo || forceReplace)) {
+      const result = await clientStore.client.downloadProfilePhoto(user.id)
       if (result) {
         const base64 = result.toString('base64')
         if (base64) {
-          chat.photo = 'data:image/jpeg;base64,' + base64
+          user.photo = 'data:image/jpeg;base64,' + base64
         }
       }
     }
@@ -143,27 +146,29 @@ async function getPhotos(forceReplace = false) {
 }
 
 function toggleCheckAll() {
-  filteredGroups.value.forEach((group) => {
-    group.selected = !checkAll.value
+  filteredUsers.value.forEach((user) => {
+    user.selected = !checkAll.value
   })
 }
 
-const filteredGroups = computed(() => {
+const filteredUsers = computed(() => {
   currentPage.value = 1
-  return chatsStore.chats.filter((group) => {
-    return group.title.toLowerCase().includes(searchTerm.value.toLowerCase())
+  return usersStore.users.filter((user) => {
+    return (user.first_name + ' ' + user.last_name)
+      .toLowerCase()
+      .includes(props.searchTerm.toLowerCase())
   })
 })
 
 const totalPages = computed(() => {
-  return Math.ceil(filteredGroups.value.length / ROWS_PER_PAGE)
+  return Math.ceil(filteredUsers.value.length / ROWS_PER_PAGE)
 })
 
-const paginatedGroups = computed(() => {
+const paginatedUsers = computed(() => {
   const startIndex = (currentPage.value - 1) * ROWS_PER_PAGE
   const endIndex = startIndex + ROWS_PER_PAGE
-  return filteredGroups.value.slice(startIndex, endIndex)
+  return filteredUsers.value.slice(startIndex, endIndex)
 })
 
-getAllUsers()
+//getAllUsers()
 </script>

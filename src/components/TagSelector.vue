@@ -14,13 +14,13 @@
       {{ tag }}
     </div>
     <div class="">
-      <button :onclick="`mod${groupId.replace('-', '_')}.showModal()`" tabindex="0">
+      <button :onclick="`mod${id.replace('-', '_')}.showModal()`" tabindex="0">
         <IconCirclePlus />
       </button>
     </div>
-    <dialog :id="`mod${groupId.replace('-', '_')}`" class="modal">
+    <dialog :id="`mod${id.replace('-', '_')}`" class="modal">
       <div class="modal-box">
-        <h3 class="font-bold text-lg pb-4">Etiquetas para {{ groupName }}</h3>
+        <h3 class="font-bold text-lg pb-4">Etiquetas para {{ name }}</h3>
         <div class="form-control" v-for="tag in availableTags" :key="tag">
           <label class="label cursor-pointer justify-start">
             <input
@@ -61,8 +61,8 @@ import { computed, ref } from 'vue'
 import { useNotification } from '@kyvg/vue3-notification'
 
 const props = defineProps<{
-  groupId: string
-  groupName: string
+  id: string
+  name: string
   tags: string[]
 }>()
 
