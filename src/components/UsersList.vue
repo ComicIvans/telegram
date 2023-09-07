@@ -1,94 +1,61 @@
 <template>
-  <div class="bg-base-100 rounded-xl h-fit">
-    <h2 class="text-center flex justify-center items-center font-bold text-xl m-6">
-      Grupos y canales disponibles
-    </h2>
-    <div class="form-control flex-row items-center">
-      <input
-        type="text"
-        v-model="searchTerm"
-        placeholder="Buscar"
-        class="input input-bordered flex-grow rounded-full w-auto m-4"
-      />
-      <span v-if="chatsLoading" class="mr-5 loading loading-spinner loading-md"></span>
-      <button v-else @click="getAllChats(true)" class="mr-5 btn btn-circle btn-ghost">
-        <IconReload />
-      </button>
-    </div>
-    <div class="divider mx-auto w-11/12 m-2"></div>
-    <i v-if="chatsLoading" class="text-center flex justify-center items-center text-base mx-4 mb-4"
-      >Cargando grupos...</i
-    >
-    <i
-      v-else-if="filteredGroups.length === 0"
-      class="text-center flex justify-center items-center text-base mx-4 mb-4"
-      >No se ha encontrado ningún grupo</i
-    >
-    <div v-else class="overflow-x-auto">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>
-              <label>
-                <input
-                  @click="toggleCheckAll"
-                  v-model="checkAll"
-                  type="checkbox"
-                  class="checkbox"
-                />
-              </label>
-            </th>
-            <th>Foto</th>
-            <th>Nombre</th>
-            <th>Etiquetas</th>
-            <th>Tipo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="group in paginatedGroups"
-            :key="paginatedGroups.indexOf(group)"
-            class="hover"
-            @click="group.selected = !group.selected"
-          >
-            <td>
-              <label>
-                <input :checked="group.selected" type="checkbox" class="checkbox" />
-              </label>
-            </td>
-            <td>
-              <div
-                class="tooltip"
-                :data-tip="isSupported && copied ? '¡Copiado!' : 'ID: ' + group.id"
-                @click.stop="
-                  () => {
-                    if (isSupported) copy(group.id.toString())
-                  }
-                "
-              >
-                <img v-if="group.photo" class="w-12 h-12 rounded-full" :src="group.photo" />
-                <IconUsersGroup v-else class="w-12 h-12" />
-              </div>
-            </td>
-            <td>{{ group.title }}</td>
-            <td @click.stop="">
-              <TagSeletor
-                v-model:tags="group.tags"
-                :group-name="group.title"
-                :group-id="group.id.toString()"
-              />
-            </td>
-            <td>{{ group.type }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <PageSelector
-      :current-page="currentPage"
-      :totalPages="totalPages"
-      @change-page="(number) => (currentPage = number)"
-    />
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>
+            <label>
+              <input @click="toggleCheckAll" v-model="checkAll" type="checkbox" class="checkbox" />
+            </label>
+          </th>
+          <th>Foto</th>
+          <th>Nombre</th>
+          <th>Etiquetas</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="group in paginatedGroups"
+          :key="paginatedGroups.indexOf(group)"
+          class="hover"
+          @click="group.selected = !group.selected"
+        >
+          <td>
+            <label>
+              <input :checked="group.selected" type="checkbox" class="checkbox" />
+            </label>
+          </td>
+          <td>
+            <div
+              class="tooltip"
+              :data-tip="isSupported && copied ? '¡Copiado!' : 'ID: ' + group.id"
+              @click.stop="
+                () => {
+                  if (isSupported) copy(group.id.toString())
+                }
+              "
+            >
+              <img v-if="group.photo" class="w-12 h-12 rounded-full" :src="group.photo" />
+              <IconUsersGroup v-else class="w-12 h-12" />
+            </div>
+          </td>
+          <td>{{ group.title }}</td>
+          <td @click.stop="">
+            <TagSeletor
+              v-model:tags="group.tags"
+              :group-name="group.title"
+              :group-id="group.id.toString()"
+            />
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
+  <PageSelector
+    :current-page="currentPage"
+    :totalPages="totalPages"
+    @change-page="(number) => (currentPage = number)"
+  />
 </template>
 
 <script setup lang="ts">
@@ -98,9 +65,12 @@ import PageSelector from '@/components/PageSelector.vue'
 import { useClipboard, usePermission } from '@vueuse/core'
 import { useTelegramClientStore } from '@/stores/telegramClient'
 import { useChatsStore } from '@/stores/chatsStore'
-import router from '@/router'
-import { IconReload } from '@tabler/icons-vue'
 import { IconUsersGroup } from '@tabler/icons-vue'
+import router from '@/router'
+
+defineProps<{
+  searchTerm: string
+}>()
 
 const ROWS_PER_PAGE = 50
 
@@ -108,7 +78,6 @@ const clientStore = useTelegramClientStore()
 const chatsStore = useChatsStore()
 
 const checkAll = ref(false)
-const searchTerm = ref('')
 const currentPage = ref(1)
 const chatsLoading = ref(true)
 
@@ -194,5 +163,5 @@ const paginatedGroups = computed(() => {
   return filteredGroups.value.slice(startIndex, endIndex)
 })
 
-getAllChats()
+getAllUsers()
 </script>

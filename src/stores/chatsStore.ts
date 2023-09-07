@@ -1,4 +1,3 @@
-import type { type } from 'os'
 import { defineStore } from 'pinia'
 
 type Chat = {
