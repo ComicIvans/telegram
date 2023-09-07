@@ -13,8 +13,8 @@
           <IconX />
         </button>
       </div>
-      <UsersList :searchTerm="searchTerm" />
       <div class="divider mx-auto w-11/12 m-2"></div>
+      <UsersList :searchTerm="searchTerm" />
     </template>
     <FileSelector v-else />
   </div>
