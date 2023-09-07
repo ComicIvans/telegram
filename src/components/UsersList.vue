@@ -27,17 +27,16 @@
           </td>
           <td>
             <div
-              v-if="user.id"
-              class="tooltip"
+              :class="user.id ? 'tooltip' : ''"
               :data-tip="isSupported && copied ? '¡Copiado!' : 'ID: ' + user.id"
               @click.stop="
                 () => {
-                  if (isSupported) copy(user.id.toString())
+                  if (user.id && isSupported) copy(user.id.toString())
                 }
               "
             >
               <img v-if="user.photo" class="w-12 h-12 rounded-full" :src="user.photo" />
-              <IconUsersGroup v-else class="w-12 h-12" />
+              <IconUser v-else class="w-12 h-12" />
             </div>
           </td>
           <td>{{ user.first_name + ' ' + user.last_name }}</td>
@@ -68,7 +67,7 @@ import PageSelector from '@/components/PageSelector.vue'
 import { useClipboard, usePermission } from '@vueuse/core'
 import { useTelegramClientStore } from '@/stores/telegramClient'
 import { useUsersStore } from '@/stores/usersStore'
-import { IconUsersGroup, IconCircleX } from '@tabler/icons-vue'
+import { IconUser, IconCircleX } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps<{
