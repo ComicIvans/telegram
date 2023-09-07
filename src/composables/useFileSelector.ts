@@ -2,7 +2,7 @@ import { type User, UserSchema } from '@/schema'
 import { useAlertStore } from '@/stores/alertStore'
 import { useUsersStore } from '@/stores/usersStore'
 import { useDropZone, useFileDialog } from '@vueuse/core'
-import { Ref, ref } from 'vue'
+import { type Ref, ref } from 'vue'
 
 function areUsers(data: any): data is User[] {
   try {
@@ -13,7 +13,10 @@ function areUsers(data: any): data is User[] {
   }
 }
 
-export function useFileSelector(dropZoneRef: Ref<HTMLElement | undefined>) {
+export function useFileSelector(
+  dropZoneRef: Ref<HTMLElement | undefined> | false,
+  usersProcessFn: (users: User[], usersStore: ReturnType<typeof useUsersStore>) => void
+) {
   const alertStore = useAlertStore()
   const usersStore = useUsersStore()
 
@@ -42,16 +45,7 @@ export function useFileSelector(dropZoneRef: Ref<HTMLElement | undefined>) {
     parseJsonFile(file)
       .then((data) => {
         if (areUsers(data)) {
-          usersStore.users = []
-          data.forEach((user) => {
-            usersStore.users.push({
-              ...user,
-              id: null,
-              photo: null,
-              selected: false,
-              failedTelegram: false
-            })
-          })
+          usersProcessFn(data, usersStore)
         } else {
           fileError.value = true
           alertStore.error('El archivo no tiene el formato correcto')
@@ -81,9 +75,12 @@ export function useFileSelector(dropZoneRef: Ref<HTMLElement | undefined>) {
     }
   }
 
-  const { isOverDropZone } = useDropZone(dropZoneRef, (files) =>
-    fileHandler(files, `No puedes arrastrar más de un archivo`)
-  )
+  const { isOverDropZone } = (() =>
+    dropZoneRef
+      ? useDropZone(dropZoneRef, (files) =>
+          fileHandler(files, `No puedes arrastrar más de un archivo`)
+        )
+      : { isOverDropZone: false })()
 
   const { open, reset, onChange } = useFileDialog()
   onChange((files) => {

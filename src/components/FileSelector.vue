@@ -45,5 +45,21 @@ const dropZoneRef = ref<HTMLDivElement>()
 const { isOverDropZone } = useDropZone(dropZoneRef, (files) =>
   fileHandler(files, `No puedes arrastrar más de un archivo`)
 )
-const { loading, fileError, fileHandler, dialogOpen: open } = useFileSelector(dropZoneRef)
+const {
+  loading,
+  fileError,
+  fileHandler,
+  dialogOpen: open
+} = useFileSelector(dropZoneRef, (data, usersStore) => {
+  usersStore.users = []
+  data.forEach((user) => {
+    usersStore.users.push({
+      ...user,
+      id: null,
+      photo: null,
+      selected: false,
+      failedTelegram: false
+    })
+  })
+})
 </script>
