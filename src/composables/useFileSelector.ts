@@ -2,6 +2,7 @@ import { type User, UserSchema } from '@/schema'
 import { useAlertStore } from '@/stores/alertStore'
 import { useUsersStore } from '@/stores/usersStore'
 import { useDropZone, useFileDialog } from '@vueuse/core'
+import { users } from 'telegram/client'
 import { type Ref, ref } from 'vue'
 
 function areUsers(data: any): data is User[] {
@@ -11,6 +12,11 @@ function areUsers(data: any): data is User[] {
   } catch (error) {
     return false
   }
+}
+
+export function removeUsers() {
+  const usersStore = useUsersStore()
+  usersStore.users = []
 }
 
 export function useFileSelector(

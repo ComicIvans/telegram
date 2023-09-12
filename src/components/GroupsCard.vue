@@ -9,11 +9,14 @@
         v-model="searchTerm"
         placeholder="Buscar"
         class="input input-bordered flex-grow rounded-full w-auto m-4"
+        @input="() => (currentPage = 1)"
       />
       <span v-if="chatsLoading" class="mr-5 loading loading-spinner loading-md"></span>
-      <button v-else @click="getAllChats(true)" class="mr-5 btn btn-circle btn-ghost">
-        <IconReload />
-      </button>
+      <div v-else class="tooltip" data-tip="Recargar lista de grupos">
+        <button @click="getAllChats(true)" class="mr-5 btn btn-circle btn-ghost">
+          <IconReload />
+        </button>
+      </div>
     </div>
     <div class="divider mx-auto w-11/12 m-2"></div>
     <i v-if="chatsLoading" class="text-center flex justify-center items-center text-base mx-4 mb-4"
@@ -176,7 +179,6 @@ function toggleCheckAll() {
 }
 
 const filteredGroups = computed(() => {
-  currentPage.value = 1
   return chatsStore.chats.filter((group) => {
     return group.title.toLowerCase().includes(searchTerm.value.toLowerCase())
   })

@@ -35,13 +35,12 @@
           />
         </svg>
       </label>
-      <div class="dropdown dropdown-end">
-        <label
-          v-on-click-outside="() => (showDropdown = false)"
-          @click="toggleDropdown"
-          tabindex="0"
-          class="m-1 btn btn-circle btn-ghost"
-        >
+      <div
+        class="dropdown dropdown-end"
+        @click="toggleDropdown"
+        v-on-click-outside="() => (showDropdown = false)"
+      >
+        <label tabindex="0" class="m-1 btn btn-circle btn-ghost">
           <IconSettingsFilled class="w-8 h-8" />
         </label>
         <ul
@@ -49,7 +48,17 @@
           class="mt-4 p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-52"
         >
           <li><a @click="logOut">Cerrar sesión</a></li>
-          <li><a @click="dialogOpen()">Añadir más personas</a></li>
+          <li>
+            <a
+              @click="
+                () => {
+                  toggleDropdown()
+                  removeUsers()
+                }
+              "
+              >Cambiar personas</a
+            >
+          </li>
         </ul>
       </div>
     </div>
@@ -64,17 +73,12 @@ import { vOnClickOutside } from '@vueuse/components'
 import { useActiveElement } from '@vueuse/core'
 import { useTelegramAuthStore } from '@/stores/telegramAuth'
 import { useTelegramClientStore } from '@/stores/telegramClient'
-import { useFileSelector } from '@/composables/useFileSelector'
+import { removeUsers } from '@/composables/useFileSelector'
 import router from '@/router'
 
 const clientStore = useTelegramClientStore()
 const authStore = useTelegramAuthStore()
 const themeStore = useThemeStore()
-
-const { dialogOpen } = useFileSelector(
-  false,
-  (users, usersStore) => (usersStore.users = usersStore.users.concat(users))
-)
 
 const fistTheme = themeStore.theme
 const showDropdown = ref(false)
