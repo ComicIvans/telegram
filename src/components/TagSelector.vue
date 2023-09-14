@@ -1,5 +1,5 @@
 <template>
-  <div class="min-w-[100px] max-w-[100px]">
+  <div class="min-w-[100px] max-w-[120px]">
     <div
       v-for="tag in tags"
       :key="tags.indexOf(tag)"
@@ -8,7 +8,7 @@
       :style="{ 'background-color': tagColor(tag).color }"
     >
       <IconCircleX
-        class="inline-block min-h-4 aspect-square -ml-2 mr-1 stroke-current"
+        class="inline-block min-h-4 min-w-fit aspect-square -ml-2 mr-1 stroke-current"
         @click="updateTag(tag)"
       />
       {{ tag }}
