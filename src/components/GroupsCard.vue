@@ -18,6 +18,22 @@
         </button>
       </div>
     </div>
+    <div v-if="selectedGroups > 0" class="flex flex-row items-center">
+      <button @click="cancelSelection" class="ml-6 btn btn-ghost btn-circle p-1">
+        <IconCircleX class="w-7 h-7" />
+      </button>
+      <p class="mx-2 text-lg flex-grow">
+        {{ selectedGroups }}
+        {{ selectedGroups === 1 ? 'chat seleccionado' : 'chats seleccionados' }}
+      </p>
+      <button
+        @click="() => (selectionConfirmed = !selectionConfirmed)"
+        class="btn btn-success mr-6"
+        :class="selectionConfirmed ? 'btn-warning' : ''"
+      >
+        {{ selectionConfirmed ? 'Editar' : 'Confirmar' }}
+      </button>
+    </div>
     <div class="divider mx-auto w-11/12 m-2"></div>
     <i v-if="chatsLoading" class="text-center flex justify-center items-center text-base mx-4 mb-4"
       >Cargando grupos...</i
@@ -38,6 +54,7 @@
                   v-model="checkAll"
                   type="checkbox"
                   class="checkbox"
+                  :disabled="selectionConfirmed"
                 />
               </label>
             </th>
@@ -56,7 +73,12 @@
           >
             <td>
               <label>
-                <input :checked="group.selected" type="checkbox" class="checkbox" />
+                <input
+                  :checked="group.selected"
+                  type="checkbox"
+                  class="checkbox"
+                  :disabled="selectionConfirmed"
+                />
               </label>
             </td>
             <td>
@@ -97,8 +119,7 @@ import PageSelector from '@/components/PageSelector.vue'
 import { useClipboard, usePermission } from '@vueuse/core'
 import { useTelegramClientStore } from '@/stores/telegramClient'
 import { useChatsStore } from '@/stores/chatsStore'
-import { IconReload } from '@tabler/icons-vue'
-import { IconUsersGroup } from '@tabler/icons-vue'
+import { IconUsersGroup, IconReload, IconCircleX } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 import { useAlertStore } from '@/stores/alertStore'
 
@@ -114,6 +135,7 @@ const checkAll = ref(false)
 const searchTerm = ref('')
 const currentPage = ref(1)
 const chatsLoading = ref(true)
+const selectionConfirmed = ref(false)
 
 const { copied, isSupported, copy } = useClipboard()
 const permissionRead = usePermission('clipboard-read')
@@ -183,6 +205,12 @@ function toggleCheckAll() {
   })
 }
 
+function cancelSelection() {
+  selectionConfirmed.value = false
+  checkAll.value = false
+  chatsStore.chats.forEach((chat) => (chat.selected = false))
+}
+
 const filteredGroups = computed(() => {
   return chatsStore.chats.filter((group) => {
     return group.title.toLowerCase().includes(searchTerm.value.toLowerCase())
@@ -197,6 +225,10 @@ const paginatedGroups = computed(() => {
   const startIndex = (currentPage.value - 1) * ROWS_PER_PAGE
   const endIndex = startIndex + ROWS_PER_PAGE
   return filteredGroups.value.slice(startIndex, endIndex)
+})
+
+const selectedGroups = computed(() => {
+  return chatsStore.chats.filter((chat) => chat.selected).length
 })
 
 getAllChats()

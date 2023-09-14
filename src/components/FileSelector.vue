@@ -60,7 +60,8 @@ const {
       id: null,
       photo: null,
       selected: false,
-      failedTelegram: false
+      failedTelegram: false,
+      telegramError: ''
     })
     user.tags.forEach((tag) => {
       if (!tagsStore.tags.includes(tag)) tagsStore.tags.push(tag)

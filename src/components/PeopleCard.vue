@@ -17,8 +17,24 @@
           </button>
         </div>
       </div>
+      <div v-if="selectedUsers > 0" class="flex flex-row items-center">
+        <button @click="cancelSelection" class="ml-6 btn btn-ghost btn-circle p-1">
+          <IconCircleX class="w-7 h-7" />
+        </button>
+        <p class="mx-2 text-lg flex-grow">
+          {{ selectedUsers }}
+          {{ selectedUsers === 1 ? 'persona seleccionada' : 'personas seleccionadas' }}
+        </p>
+        <button
+          @click="() => (selectionConfirmed = !selectionConfirmed)"
+          class="btn btn-success mr-6"
+          :class="selectionConfirmed ? 'btn-warning' : ''"
+        >
+          {{ selectionConfirmed ? 'Editar' : 'Confirmar' }}
+        </button>
+      </div>
       <div class="divider mx-auto w-11/12 m-2"></div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-visible">
         <table class="table">
           <thead>
             <tr>
@@ -29,6 +45,7 @@
                     v-model="checkAll"
                     type="checkbox"
                     class="checkbox"
+                    :disabled="selectionConfirmed"
                   />
                 </label>
               </th>
@@ -46,13 +63,24 @@
             >
               <td>
                 <label>
-                  <input :checked="user.selected" type="checkbox" class="checkbox" />
+                  <input
+                    :checked="user.selected"
+                    type="checkbox"
+                    class="checkbox"
+                    :disabled="selectionConfirmed || user.failedTelegram"
+                  />
                 </label>
               </td>
               <td>
                 <div
-                  :class="user.id ? 'tooltip' : ''"
-                  :data-tip="isSupported && copied ? '¡Copiado!' : 'ID: ' + user.id"
+                  :class="user.id || user.failedTelegram ? 'tooltip' : ''"
+                  :data-tip="
+                    user.id && isSupported && copied
+                      ? '¡Copiado!'
+                      : user.id
+                      ? 'ID: ' + user.id
+                      : user.telegramError
+                  "
                   @click.stop="
                     () => {
                       if (user.id && isSupported) copy(user.id.toString())
@@ -96,7 +124,8 @@ import {
   IconCloudDownload,
   IconUser,
   IconUserQuestion,
-  IconUserExclamation
+  IconUserExclamation,
+  IconCircleX
 } from '@tabler/icons-vue'
 import FileSelector from './FileSelector.vue'
 import { useUsersStore } from '@/stores/usersStore'
@@ -121,6 +150,7 @@ const searchTerm = ref('')
 const checkAll = ref(false)
 const currentPage = ref(1)
 const usersLoading = ref(false)
+const selectionConfirmed = ref(false)
 
 const { copied, isSupported, copy } = useClipboard()
 const permissionRead = usePermission('clipboard-read')
@@ -154,7 +184,7 @@ async function getAllUsers(forceReplace = false) {
             })
           )
           if (!id || !id.users || id.users.length === 0 || !id.users[0].id) {
-            throw new Error('Could not find user')
+            throw new Error('No se ha podido encontrar el teléfono')
           }
           await clientStore.client.invoke(
             new Api.contacts.AddContact({
@@ -167,23 +197,26 @@ async function getAllUsers(forceReplace = false) {
           )
           result = clientStore.client.getEntity(user.phone)
         } else {
-          throw new Error('No username or phone number found')
+          throw new Error('No se ha especificado nombre de usuario ni teléfono')
         }
         await result
           .then((entity) => {
             if (entity) {
               // @ts-expect-error
               user.id = entity.id
+              user.failedTelegram = false
+              user.telegramError = ''
             } else {
               user.failedTelegram = true
             }
           })
-          .catch(() => {
+          .catch((error) => {
             user.failedTelegram = true
+            user.telegramError = error.toString()
           })
       } catch (error) {
-        console.log(error)
         user.failedTelegram = true
+        user.telegramError = 'No se ha podido encontrar al usuario'
       }
     }
     usersLoading.value = false
@@ -209,8 +242,14 @@ async function getPhotos(forceReplace = false) {
 
 function toggleCheckAll() {
   filteredUsers.value.forEach((user) => {
-    user.selected = !checkAll.value
+    if (!user.failedTelegram) user.selected = !checkAll.value
   })
+}
+
+function cancelSelection() {
+  selectionConfirmed.value = false
+  checkAll.value = false
+  usersStore.users.forEach((user) => (user.selected = false))
 }
 
 const filteredUsers = computed(() => {
@@ -229,6 +268,10 @@ const paginatedUsers = computed(() => {
   const startIndex = (currentPage.value - 1) * ROWS_PER_PAGE
   const endIndex = startIndex + ROWS_PER_PAGE
   return filteredUsers.value.slice(startIndex, endIndex)
+})
+
+const selectedUsers = computed(() => {
+  return usersStore.users.filter((user) => user.selected).length
 })
 
 getAllUsers()

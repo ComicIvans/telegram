@@ -6,6 +6,7 @@ type StoreUser = User & {
   photo: string | null
   selected: boolean
   failedTelegram: boolean
+  telegramError: string
 }
 
 export const useUsersStore = defineStore('usersStore', {
