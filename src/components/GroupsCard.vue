@@ -27,7 +27,7 @@
         {{ selectedGroups === 1 ? 'chat seleccionado' : 'chats seleccionados' }}
       </p>
       <button
-        @click="() => (selectionConfirmed = !selectionConfirmed)"
+        @click="editSelection"
         class="btn btn-success mr-6"
         :class="selectionConfirmed ? 'btn-warning' : ''"
       >
@@ -124,6 +124,7 @@ import { useRouter } from 'vue-router'
 import { useAlertStore } from '@/stores/alertStore'
 
 const ROWS_PER_PAGE = 50
+const emit = defineEmits(['toggleSelection'])
 
 const router = useRouter()
 
@@ -209,6 +210,11 @@ function cancelSelection() {
   selectionConfirmed.value = false
   checkAll.value = false
   chatsStore.chats.forEach((chat) => (chat.selected = false))
+}
+
+function editSelection() {
+  selectionConfirmed.value = !selectionConfirmed.value
+  emit('toggleSelection', selectionConfirmed.value)
 }
 
 const filteredGroups = computed(() => {

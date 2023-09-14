@@ -26,7 +26,7 @@
           {{ selectedUsers === 1 ? 'persona seleccionada' : 'personas seleccionadas' }}
         </p>
         <button
-          @click="() => (selectionConfirmed = !selectionConfirmed)"
+          @click="editSelection"
           class="btn btn-success mr-6"
           :class="selectionConfirmed ? 'btn-warning' : ''"
         >
@@ -139,6 +139,7 @@ import type { Entity } from 'telegram/define'
 import { Api } from 'telegram'
 
 const ROWS_PER_PAGE = 50
+const emit = defineEmits(['toggleSelection'])
 
 const router = useRouter()
 
@@ -250,6 +251,11 @@ function cancelSelection() {
   selectionConfirmed.value = false
   checkAll.value = false
   usersStore.users.forEach((user) => (user.selected = false))
+}
+
+function editSelection() {
+  selectionConfirmed.value = !selectionConfirmed.value
+  emit('toggleSelection', selectionConfirmed.value)
 }
 
 const filteredUsers = computed(() => {
