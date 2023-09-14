@@ -39,8 +39,10 @@
 import { ref } from 'vue'
 import { useDropZone } from '@vueuse/core'
 import { useFileSelector } from '@/composables/useFileSelector'
+import { useTagsStore } from '@/stores/tagsStore'
 
 const dropZoneRef = ref<HTMLDivElement>()
+const tagsStore = useTagsStore()
 
 const { isOverDropZone } = useDropZone(dropZoneRef, (files) =>
   fileHandler(files, `No puedes arrastrar más de un archivo`)
@@ -59,6 +61,9 @@ const {
       photo: null,
       selected: false,
       failedTelegram: false
+    })
+    user.tags.forEach((tag) => {
+      if (!tagsStore.tags.includes(tag)) tagsStore.tags.push(tag)
     })
   })
 })

@@ -21,16 +21,18 @@
     <dialog :id="`mod${id.replace('-', '_')}`" class="modal">
       <div class="modal-box">
         <h3 class="font-bold text-lg pb-4">Etiquetas para {{ name }}</h3>
-        <div class="form-control" v-for="tag in availableTags" :key="tag">
-          <label class="label cursor-pointer justify-start">
+        <div class="form-control flex-row" v-for="tag in tagsStore.tags" :key="tag">
+          <label class="label cursor-pointer justify-start flex-grow">
             <input
               type="checkbox"
               :checked="tags.includes(tag)"
               class="checkbox mr-3"
               @change="updateTag(tag)"
             />
-            <span class="label-text">{{ tag }}</span>
-          </label>
+            <span class="label-text">{{ tag }}</span> </label
+          ><button @click="deleteTag(tag)" class="btn btn-ghost btn-circle">
+            <IconTrash class="w-5 h-5" />
+          </button>
         </div>
         <div class="join mt-4">
           <input
@@ -54,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { IconCirclePlus, IconCircleX, IconX } from '@tabler/icons-vue'
+import { IconCirclePlus, IconCircleX, IconX, IconTrash } from '@tabler/icons-vue'
 import { useTagsStore } from '@/stores/tagsStore'
 import uniqolor from 'uniqolor'
 import { computed, ref } from 'vue'
@@ -70,7 +72,7 @@ const emit = defineEmits(['update:tags'])
 
 const { notify } = useNotification()
 
-const availableTags = useTagsStore().tags
+const tagsStore = useTagsStore()
 
 const updateTag = (tag: string) => {
   notify({
@@ -90,8 +92,15 @@ const updateTag = (tag: string) => {
 const newTag = ref('')
 const addTag = () => {
   emit('update:tags', [...props.tags, newTag.value])
-  availableTags.push(newTag.value)
+  tagsStore.tags.push(newTag.value)
   newTag.value = ''
+}
+
+const deleteTag = (tag: string) => {
+  const index = tagsStore.tags.indexOf(tag)
+  if (index !== -1) {
+    tagsStore.tags.splice(index, 1)
+  }
 }
 
 const tagColor = computed(() => (tag: string) => uniqolor(tag))
