@@ -10,8 +10,9 @@
           class="input input-bordered flex-grow rounded-full w-auto m-4"
           @input="() => (currentPage = 1)"
         />
-        <div class="tooltip" data-tip="Intentar localizar en Telegram">
-          <button @click="niceFun" class="mr-5 btn btn-circle btn-ghost">
+        <span v-if="usersLoading" class="mr-5 loading loading-spinner loading-md"></span>
+        <div v-else class="tooltip" data-tip="Intentar localizar en Telegram">
+          <button @click="() => getAllUsers(true)" class="mr-5 btn btn-circle btn-ghost">
             <IconCloudDownload />
           </button>
         </div>
@@ -59,7 +60,12 @@
                   "
                 >
                   <img v-if="user.photo" class="w-12 h-12 rounded-full" :src="user.photo" />
-                  <IconUser v-else class="w-12 h-12" />
+                  <IconUser v-else-if="user.id" class="w-12 h-12" />
+                  <IconUserExclamation
+                    v-else-if="user.failedTelegram"
+                    class="w-12 h-12 text-error"
+                  />
+                  <IconUserQuestion v-else class="w-12 h-12" />
                 </div>
               </td>
               <td>{{ user.first_name + ' ' + user.last_name }}</td>
@@ -86,22 +92,22 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { IconCloudDownload } from '@tabler/icons-vue'
+import {
+  IconCloudDownload,
+  IconUser,
+  IconUserQuestion,
+  IconUserExclamation
+} from '@tabler/icons-vue'
 import FileSelector from './FileSelector.vue'
 import { useUsersStore } from '@/stores/usersStore'
 import TagSeletor from '@/components/TagSelector.vue'
 import PageSelector from '@/components/PageSelector.vue'
 import { useClipboard, usePermission } from '@vueuse/core'
 import { useTelegramClientStore } from '@/stores/telegramClient'
-import { IconUser } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
-
-// BORRAR
-const niceFun = () => {
-  console.info('nice')
-  usersStore.users = []
-  console.info('really nice')
-}
+import { useAlertStore } from '@/stores/alertStore'
+import type { Entity } from 'telegram/define'
+import { Api } from 'telegram'
 
 const ROWS_PER_PAGE = 50
 
@@ -109,11 +115,12 @@ const router = useRouter()
 
 const clientStore = useTelegramClientStore()
 const usersStore = useUsersStore()
+const alertStore = useAlertStore()
 
 const searchTerm = ref('')
 const checkAll = ref(false)
 const currentPage = ref(1)
-const usersLoading = ref(true)
+const usersLoading = ref(false)
 
 const { copied, isSupported, copy } = useClipboard()
 const permissionRead = usePermission('clipboard-read')
@@ -122,6 +129,7 @@ const permissionWrite = usePermission('clipboard-write')
 async function getAllUsers(forceReplace = false) {
   if (!clientStore.client) {
     router.replace('/auth')
+    alertStore.error('Se ha cerrado la sesión en Telegram.')
   } else {
     if (
       forceReplace ||
@@ -134,7 +142,50 @@ async function getAllUsers(forceReplace = false) {
       usersLoading.value = false
       return
     }
-    //const result =
+    for (const user of usersStore.users) {
+      try {
+        let result: Promise<Entity | undefined>
+        if (user.username) {
+          result = clientStore.client.getEntity(user.username)
+        } else if (user.phone) {
+          let id = await clientStore.client.invoke(
+            new Api.contacts.ResolvePhone({
+              phone: user.phone
+            })
+          )
+          if (!id || !id.users || id.users.length === 0 || !id.users[0].id) {
+            throw new Error('Could not find user')
+          }
+          await clientStore.client.invoke(
+            new Api.contacts.AddContact({
+              id: id.users[0].id,
+              firstName: user.first_name,
+              lastName: user.last_name,
+              phone: user.phone,
+              addPhonePrivacyException: false
+            })
+          )
+          result = clientStore.client.getEntity(user.phone)
+        } else {
+          throw new Error('No username or phone number found')
+        }
+        await result
+          .then((entity) => {
+            if (entity) {
+              // @ts-expect-error
+              user.id = entity.id
+            } else {
+              user.failedTelegram = true
+            }
+          })
+          .catch(() => {
+            user.failedTelegram = true
+          })
+      } catch (error) {
+        console.log(error)
+        user.failedTelegram = true
+      }
+    }
     usersLoading.value = false
     getPhotos(true)
   }
@@ -144,6 +195,7 @@ async function getPhotos(forceReplace = false) {
   const users = forceReplace ? usersStore.users : paginatedUsers.value
   users.forEach(async (user) => {
     if (user.id && clientStore.client && (!user.photo || forceReplace)) {
+      // @ts-expect-error
       const result = await clientStore.client.downloadProfilePhoto(user.id)
       if (result) {
         const base64 = result.toString('base64')

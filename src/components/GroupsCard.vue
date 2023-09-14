@@ -100,6 +100,7 @@ import { useChatsStore } from '@/stores/chatsStore'
 import { IconReload } from '@tabler/icons-vue'
 import { IconUsersGroup } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
+import { useAlertStore } from '@/stores/alertStore'
 
 const ROWS_PER_PAGE = 50
 
@@ -107,6 +108,7 @@ const router = useRouter()
 
 const clientStore = useTelegramClientStore()
 const chatsStore = useChatsStore()
+const alertStore = useAlertStore()
 
 const checkAll = ref(false)
 const searchTerm = ref('')
@@ -120,6 +122,7 @@ const permissionWrite = usePermission('clipboard-write')
 async function getAllChats(forceReplace = false) {
   if (!clientStore.client) {
     router.replace('/auth')
+    alertStore.error('Se ha cerrado la sesión en Telegram.')
   } else {
     if (
       forceReplace ||
@@ -140,12 +143,13 @@ async function getAllChats(forceReplace = false) {
     result.forEach((chat) => {
       if (chat.entity && chat.title && clientStore.client) {
         chatsStore.chats.push({
+          // @ts-expect-error
           id: chat.id,
           title: chat.title,
           type: chat.isChannel ? 'Canal' : chat.isGroup ? 'Grupo' : 'Desconocido',
           photo: null,
-          canAddUsersAsAdmin:
-            chat.entity.adminRights && chat.entity.adminRights.inviteUsers ? true : false,
+          // @ts-ignore
+          canAddUsersAsAdmin: chat.entity.adminRights && chat.entity.adminRights.inviteUsers,
           canAddUsersAsUser: false,
           selected: false,
           tags: []
@@ -161,6 +165,7 @@ async function getPhotos(forceReplace = false) {
   const chats = forceReplace ? chatsStore.chats : paginatedGroups.value
   chats.forEach(async (chat) => {
     if (chat.id && clientStore.client && (!chat.photo || forceReplace)) {
+      // @ts-expect-error
       const result = await clientStore.client.downloadProfilePhoto(chat.id)
       if (result) {
         const base64 = result.toString('base64')
