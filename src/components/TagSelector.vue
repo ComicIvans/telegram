@@ -94,13 +94,27 @@ const addTag = () => {
   emit('update:tags', [...props.tags, newTag.value])
   tagsStore.tags.push(newTag.value)
   newTag.value = ''
+  notify({
+    text: 'Etiqueta creada',
+    type: 'alert-info'
+  })
 }
 
 const deleteTag = (tag: string) => {
+  if (props.tags.includes(tag)) {
+    emit(
+      'update:tags',
+      props.tags.filter((t) => t !== tag)
+    )
+  }
   const index = tagsStore.tags.indexOf(tag)
   if (index !== -1) {
     tagsStore.tags.splice(index, 1)
   }
+  notify({
+    text: 'Etiqueta eliminada',
+    type: 'alert-info'
+  })
 }
 
 const tagColor = computed(() => (tag: string) => uniqolor(tag))
