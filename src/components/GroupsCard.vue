@@ -137,6 +137,7 @@ const searchTerm = ref('')
 const currentPage = ref(1)
 const chatsLoading = ref(true)
 const selectionConfirmed = ref(false)
+const oldTags = ref<{ id: BigInt; title: string; tags: string[] }[]>([])
 
 const { copied, isSupported, copy } = useClipboard()
 const permissionRead = usePermission('clipboard-read')
@@ -154,6 +155,7 @@ async function getAllChats(forceReplace = false) {
       (chatsStore.date && chatsStore.date < Date.now() - 86400000)
     ) {
       chatsLoading.value = true
+      storeTags()
       chatsStore.date = Date.now()
       chatsStore.chats = []
     } else {
@@ -179,8 +181,47 @@ async function getAllChats(forceReplace = false) {
         })
       }
     })
+    restoreTags()
     chatsLoading.value = false
     getPhotos(true)
+  }
+}
+
+function storeTags() {
+  oldTags.value = []
+  chatsStore.chats.forEach((chat) => {
+    if (chat.tags.length > 0) {
+      oldTags.value.push({
+        id: chat.id,
+        title: chat.title,
+        tags: chat.tags
+      })
+    }
+  })
+}
+
+function restoreTags() {
+  const notFound: { id: BigInt; title: string; tags: string[] }[] = []
+  oldTags.value.forEach((chatTags) => {
+    const chat = chatsStore.chats.find((chat) => chat.id.toString() === chatTags.id.toString())
+    if (chat) {
+      chat.tags = chatTags.tags
+    } else {
+      notFound.push(chatTags)
+    }
+  })
+  if (notFound.length === 1) {
+    alertStore.error(
+      'Al intentar restaurar las etiquetas de los chats, no se ha podido encontrar ' +
+        notFound.length +
+        ' de ellos. Se han descartado las etiquetas en este chat.'
+    )
+  } else if (notFound.length > 1) {
+    alertStore.error(
+      'Al intentar restaurar las etiquetas de los chats, no se han podido encontrar ' +
+        notFound.length +
+        ' de ellos. Se han descartado las etiquetas en estos chats.'
+    )
   }
 }
 
