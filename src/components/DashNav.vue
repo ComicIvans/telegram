@@ -68,7 +68,7 @@
     v-if="showConfirmation"
     :id="'tagsDeleteConfirmation'"
     :title="'Atención'"
-    :message="'Estás a punto de eliminar todas las etiquetas, tendrás que volver a crearlas y asignarlas, ¿estás seguro?'"
+    :message="'Estás a punto de eliminar todas las etiquetas, tendrás que volver a asignarlas, ¿estás seguro?'"
     @confirm="deleteAllTags"
     @cancel="() => (showConfirmation = false)"
   />
@@ -84,7 +84,6 @@ import { useTelegramAuthStore } from '@/stores/telegramAuth'
 import { useTelegramClientStore } from '@/stores/telegramClient'
 import { useChatsStore } from '@/stores/chatsStore'
 import { useUsersStore } from '@/stores/usersStore'
-import { useTagsStore } from '@/stores/tagsStore'
 import { removeUsers } from '@/composables/useFileSelector'
 import router from '@/router'
 import Confirmation from '@/components/Confirmation.vue'
@@ -94,7 +93,6 @@ const authStore = useTelegramAuthStore()
 const themeStore = useThemeStore()
 const chatsStore = useChatsStore()
 const usersStore = useUsersStore()
-const tagsStore = useTagsStore()
 
 const fistTheme = themeStore.theme
 const showDropdown = ref(false)
@@ -122,7 +120,6 @@ function logOut() {
 }
 
 function deleteAllTags() {
-  tagsStore.tags = []
   chatsStore.chats.forEach((chat) => {
     chat.tags = []
   })
