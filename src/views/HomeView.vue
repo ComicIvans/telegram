@@ -40,9 +40,9 @@
         <ConfirmationUsersList v-else-if="activeTab === 'Usuarios'" />
       </div>
       <div v-else class="flex flex-grow w-10/12 md:justify-center">
-        <GroupsCard @toggleSelection="(selection) => (groupsSelected = selection)" class="flex-1" />
+        <ChatsCard @toggleSelection="(selection) => (groupsSelected = selection)" class="flex-1" />
         <div class="divider divider-horizontal"></div>
-        <PeopleCard @toggleSelection="(selection) => (peopleSelected = selection)" class="flex-1" />
+        <UsersCard @toggleSelection="(selection) => (peopleSelected = selection)" class="flex-1" />
       </div>
     </main>
     <Footer class="mt-4" />
@@ -54,8 +54,8 @@ import { ref, watch } from 'vue'
 import DashNav from '@/components/DashNav.vue'
 import Footer from '@/components/Footer.vue'
 import Alert from '@/components/Alert.vue'
-import GroupsCard from '@/components/GroupsCard.vue'
-import PeopleCard from '@/components/PeopleCard.vue'
+import ChatsCard from '@/components/ChatsCard.vue'
+import UsersCard from '@/components/UsersCard.vue'
 import ConfirmationChatsList from '@/components/ConfirmationChatsList.vue'
 import ConfirmationUsersList from '@/components/ConfirmationUsersList.vue'
 import { IconArrowLeft } from '@tabler/icons-vue'
