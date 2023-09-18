@@ -59,10 +59,19 @@
               >Cambiar personas</a
             >
           </li>
+          <li><a @click="() => (showConfirmation = true)">Borrar todas las etiquetas</a></li>
         </ul>
       </div>
     </div>
   </nav>
+  <Confirmation
+    v-if="showConfirmation"
+    :id="'tagsDeleteConfirmation'"
+    :title="'Atención'"
+    :message="'Estás a punto de eliminar todas las etiquetas, tendrás que volver a crearlas y asignarlas, ¿estás seguro?'"
+    @confirm="deleteAllTags"
+    @cancel="() => (showConfirmation = false)"
+  />
 </template>
 
 <script setup lang="ts">
@@ -73,16 +82,24 @@ import { vOnClickOutside } from '@vueuse/components'
 import { useActiveElement } from '@vueuse/core'
 import { useTelegramAuthStore } from '@/stores/telegramAuth'
 import { useTelegramClientStore } from '@/stores/telegramClient'
+import { useChatsStore } from '@/stores/chatsStore'
+import { useUsersStore } from '@/stores/usersStore'
+import { useTagsStore } from '@/stores/tagsStore'
 import { removeUsers } from '@/composables/useFileSelector'
 import router from '@/router'
+import Confirmation from '@/components/Confirmation.vue'
 
 const clientStore = useTelegramClientStore()
 const authStore = useTelegramAuthStore()
 const themeStore = useThemeStore()
+const chatsStore = useChatsStore()
+const usersStore = useUsersStore()
+const tagsStore = useTagsStore()
 
 const fistTheme = themeStore.theme
 const showDropdown = ref(false)
 const activeElement = useActiveElement()
+const showConfirmation = ref(false)
 
 defineProps<{
   img: string
@@ -102,5 +119,16 @@ function logOut() {
   clientStore.client = null
   authStore.stringSession = null
   router.push('/auth')
+}
+
+function deleteAllTags() {
+  tagsStore.tags = []
+  chatsStore.chats.forEach((chat) => {
+    chat.tags = []
+  })
+  usersStore.users.forEach((user) => {
+    user.tags = []
+  })
+  showConfirmation.value = false
 }
 </script>
