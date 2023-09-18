@@ -173,6 +173,7 @@ async function getAllUsers(forceReplace = false) {
       usersLoading.value = false
       return
     }
+    let failedCount = 0
     for (const user of usersStore.users) {
       try {
         let result: Promise<Entity | undefined>
@@ -209,19 +210,35 @@ async function getAllUsers(forceReplace = false) {
               user.telegramError = ''
             } else {
               user.failedTelegram = true
+              failedCount++
             }
           })
           .catch((error) => {
             user.failedTelegram = true
+            failedCount++
             user.telegramError = error.toString()
           })
       } catch (error) {
         user.failedTelegram = true
+        failedCount++
         user.telegramError = 'No se ha podido encontrar al usuario'
       }
     }
     usersLoading.value = false
     getPhotos(true)
+    if (failedCount === 1) {
+      alertStore.warning(
+        'No se ha podido encontrar a ' +
+          failedCount +
+          ' usuario. Se ha marcado en la lista y no se podrá seleccionar. Puedes comprobar el error colocando el cursor encima de su icono.'
+      )
+    } else if (failedCount > 1) {
+      alertStore.warning(
+        'No se ha podido encontrar a ' +
+          failedCount +
+          ' usuarios. Se han marcado en la lista y no se podrán seleccionar. Puedes comprobar el error colocando el cursor encima de sus iconos.'
+      )
+    }
   }
 }
 
