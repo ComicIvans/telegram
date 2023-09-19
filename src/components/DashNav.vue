@@ -104,6 +104,8 @@ defineProps<{
   title: string
 }>()
 
+const emit = defineEmits(['deleteAllTags'])
+
 function toggleDropdown() {
   if (showDropdown.value) {
     activeElement.value?.blur()
@@ -127,5 +129,6 @@ function deleteAllTags() {
     user.tags = []
   })
   showConfirmation.value = false
+  emit('deleteAllTags')
 }
 </script>

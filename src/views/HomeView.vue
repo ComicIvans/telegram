@@ -1,7 +1,16 @@
 <template>
   <div class="min-h-screen flex flex-col bg-base-200">
     <header class="top-0 left-0 w-full fixed z-10 border-b">
-      <DashNav :img="logo" :title="'Gestión de los grupos de Telegram'" />
+      <DashNav
+        :img="logo"
+        :title="'Gestión de los grupos de Telegram'"
+        @delete-all-tags="
+          () => {
+            groupsSelected = false
+            peopleSelected = false
+          }
+        "
+      />
     </header>
     <main class="flex flex-col flex-grow items-center pt-24">
       <Alert class="mb-4" />
