@@ -2,7 +2,7 @@ import type { User } from '@/schema'
 import { defineStore } from 'pinia'
 
 type StoreUser = User & {
-  id: BigInt | null
+  id: bigInt.BigInteger | null
   photo: string | null
   selected: boolean
   failedTelegram: boolean

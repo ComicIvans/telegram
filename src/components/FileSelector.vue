@@ -24,8 +24,8 @@
     <div class="mockup-code mb-4">
       <pre><code>[</code></pre>
       <pre><code>  {</code></pre>
-      <pre><code>    first_name: 'Name',</code></pre>
-      <pre><code>    last_name: 'Name' | '',</code></pre>
+      <pre><code>    firstName: 'Name',</code></pre>
+      <pre><code>    lastName: 'Name' | '',</code></pre>
       <pre><code>    phone: '+34666666666',</code></pre>
       <pre><code>    username: 'username' | '',</code></pre>
       <pre><code>    tags: ['tag1', 'tag2'] | []</code></pre>

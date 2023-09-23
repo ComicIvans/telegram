@@ -13,28 +13,37 @@
       />
       {{ tag }}
     </div>
-    <div class="">
+    <div>
       <button :onclick="`mod${id.replace('-', '_')}.showModal()`" tabindex="0">
         <IconCirclePlus />
       </button>
     </div>
     <dialog :id="`mod${id.replace('-', '_')}`" class="modal">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg pb-4">Etiquetas para {{ name }}</h3>
-        <div class="form-control flex-row" v-for="tag in tagsStore.tags" :key="tag">
-          <label class="label cursor-pointer justify-start flex-grow">
-            <input
-              type="checkbox"
-              :checked="tags.includes(tag)"
-              class="checkbox mr-3"
-              @change="updateTag(tag)"
-            />
-            <span class="label-text">{{ tag }}</span> </label
-          ><button @click="deleteTag(tag)" class="btn btn-ghost btn-circle">
-            <IconTrash class="w-5 h-5" />
-          </button>
+      <div class="modal-box flex flex-col">
+        <div class="flex flex-row mb-4">
+          <h3 class="font-bold text-lg pb-4 flex-grow">Etiquetas para {{ name }}</h3>
+          <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost">
+              <IconX />
+            </button>
+          </form>
         </div>
-        <div class="join mt-4">
+        <div class="overflow-y-scroll max-h-[70vh]">
+          <div class="form-control flex-row" v-for="tag in tagsStore.tags" :key="tag">
+            <label class="label cursor-pointer justify-start flex-grow">
+              <input
+                type="checkbox"
+                :checked="tags.includes(tag)"
+                class="checkbox mr-3"
+                @change="updateTag(tag)"
+              />
+              <span class="label-text">{{ tag }}</span> </label
+            ><button @click="deleteTag(tag)" class="btn btn-ghost btn-circle mr-2">
+              <IconTrash class="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+        <div class="join mt-4 mx-auto">
           <input
             class="input input-bordered join-item"
             placeholder="Nueva etiqueta..."
@@ -44,13 +53,10 @@
             Añadir
           </button>
         </div>
-        <div class="modal-action">
-          <form method="dialog">
-            <!-- if there is a button in form, it will close the modal -->
-            <button class="btn btn-circle"><IconX /></button>
-          </form>
-        </div>
       </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>Cerrar</button>
+      </form>
     </dialog>
   </div>
 </template>

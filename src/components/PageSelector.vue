@@ -1,5 +1,5 @@
 <template>
-  <div v-if="totalPages > 1 && totalPages < 5" class="join flex justify-center items-center mb-4">
+  <div v-if="totalPages > 1 && totalPages < 5" class="join flex justify-center items-center my-4">
     <button
       v-for="number of pageNumbers"
       :key="number"
@@ -10,7 +10,7 @@
       {{ number }}
     </button>
   </div>
-  <div v-else-if="totalPages >= 5" class="join flex justify-center items-center mb-4">
+  <div v-else-if="totalPages >= 5" class="join flex justify-center items-center my-4">
     <button
       @click="$emit('changePage', currentPage === 1 ? 1 : currentPage - 1)"
       class="join-item btn"

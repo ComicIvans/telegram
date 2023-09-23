@@ -16,10 +16,25 @@
       <Alert class="mb-4" />
       <div v-if="groupsSelected && peopleSelected" class="w-screen">
         <nav class="flex justify-center items-center">
-          <div class="flex flex-1 ml-2">
+          <div class="flex flex-1 ml-4">
             <button @click="cancelSelection" class="btn btn-circle">
               <IconArrowLeft />
             </button>
+            <input
+              type="text"
+              v-model="searchTerm"
+              placeholder="Buscar"
+              class="input input-bordered rounded-full w-auto mx-2"
+            />
+            <span v-if="statusLoading" class="loading loading-spinner loading-md"></span>
+            <span
+              v-else
+              class="tooltip z-[10]"
+              data-tip="Actualizar información de chats y usuarios"
+            >
+              <button @click="" class="btn btn-circle">
+                <IconReload /></button
+            ></span>
           </div>
           <div class="flex flex-grow"></div>
           <div class="tabs tabs-boxed">
@@ -37,15 +52,26 @@
             >
           </div>
           <div class="flex flex-grow"></div>
-          <div class="flex flex-1 flex-row-reverse mr-2">
-            <button class="btn btn-success">
+          <div class="flex flex-1 flex-row-reverse mr-4">
+            <button class="btn btn-accent" :class="statusLoading ? 'btn-disabled' : ''">
               Actualizar
               {{ activeTab === 'Chats' ? 'chats' : activeTab === 'Usuarios' ? 'usuarios' : '' }}
+            </button>
+            <button
+              v-if="!statusLoading"
+              class="tooltip mx-4 z-[10]"
+              :class="`text-${status.type}`"
+              :data-tip="status.message"
+            >
+              <IconCheck v-if="status.type === 'success'" />
+              <IconAlertTriangle v-else-if="status.type === 'warning'" />
+              <IconAlertCircle v-else-if="status.type === 'error'" />
+              <IconQuestionMark v-else />
             </button>
           </div>
         </nav>
         <div class="divider mx-auto m-2"></div>
-        <ConfirmationChatsList v-if="activeTab === 'Chats'" />
+        <ConfirmationChatsList :searchTerm="searchTerm" v-if="activeTab === 'Chats'" />
         <ConfirmationUsersList v-else-if="activeTab === 'Usuarios'" />
       </div>
       <div v-else class="flex flex-grow w-10/12 md:justify-center">
@@ -67,19 +93,43 @@ import ChatsCard from '@/components/ChatsCard.vue'
 import UsersCard from '@/components/UsersCard.vue'
 import ConfirmationChatsList from '@/components/ConfirmationChatsList.vue'
 import ConfirmationUsersList from '@/components/ConfirmationUsersList.vue'
-import { IconArrowLeft } from '@tabler/icons-vue'
+import {
+  IconArrowLeft,
+  IconCheck,
+  IconAlertTriangle,
+  IconAlertCircle,
+  IconQuestionMark,
+  IconReload
+} from '@tabler/icons-vue'
 import logo from '@/assets/images/logo.png'
+import { addSelectedUsers, deleteAllUsers } from '@/composables/chatManager'
 
 const groupsSelected = ref(false)
 const peopleSelected = ref(false)
 const activeTab = ref('Chats')
+const searchTerm = ref('')
+const statusLoading = ref(false)
+const status = ref({
+  type: 'success',
+  message: 'Todo parece correcto'
+})
 
 function cancelSelection() {
   groupsSelected.value = false
   peopleSelected.value = false
+  deleteAllUsers()
 }
 
 function changeTab(tab: string) {
   activeTab.value = tab
 }
+
+watch(
+  () => groupsSelected.value && peopleSelected.value,
+  (selected) => {
+    if (selected) {
+      addSelectedUsers()
+    }
+  }
+)
 </script>

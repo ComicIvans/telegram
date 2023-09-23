@@ -81,7 +81,7 @@
                 />
               </label>
             </td>
-            <td>
+            <td class="min-w-[80px]">
               <div
                 class="tooltip"
                 :data-tip="isSupported && copied ? '¡Copiado!' : 'ID: ' + group.id"
@@ -122,8 +122,9 @@ import { useChatsStore } from '@/stores/chatsStore'
 import { IconUsersGroup, IconReload, IconCircleX } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 import { useAlertStore } from '@/stores/alertStore'
+import { getChatsPhotos, test } from '@/composables/chatManager'
 
-const ROWS_PER_PAGE = 50
+const ROWS_PER_PAGE = 10
 const emit = defineEmits(['toggleSelection'])
 
 const router = useRouter()
@@ -137,7 +138,7 @@ const searchTerm = ref('')
 const currentPage = ref(1)
 const chatsLoading = ref(true)
 const selectionConfirmed = ref(false)
-const oldTags = ref<{ id: BigInt; title: string; tags: string[] }[]>([])
+const oldTags = ref<{ id: bigInt.BigInteger; title: string; tags: string[] }[]>([])
 
 const { copied, isSupported, copy } = useClipboard()
 const permissionRead = usePermission('clipboard-read')
@@ -166,24 +167,27 @@ async function getAllChats(forceReplace = false) {
       (chat) => !chat.isUser && chat.title !== ''
     )
     result.forEach((chat) => {
-      if (chat.entity && chat.title && clientStore.client) {
+      if (chat.entity && chat.title && clientStore.client && chat.id) {
         chatsStore.chats.push({
-          // @ts-expect-error
           id: chat.id,
           title: chat.title,
-          type: chat.isChannel ? 'Canal' : chat.isGroup ? 'Grupo' : 'Desconocido',
+          type: chat.isGroup ? 'Grupo' : chat.isChannel ? 'Canal' : 'Desconocido',
           photo: null,
           // @ts-ignore
           canAddUsersAsAdmin: chat.entity.adminRights && chat.entity.adminRights.inviteUsers,
-          canAddUsersAsUser: false,
+          canAddUsersAsUser: !(
+            // @ts-ignore
+            (chat.entity.defaultBannedRights && chat.entity.defaultBannedRights.inviteUsers)
+          ),
           selected: false,
-          tags: []
+          tags: [],
+          participants: null
         })
       }
     })
     restoreTags()
     chatsLoading.value = false
-    getPhotos(true)
+    getChatsPhotos()
   }
 }
 
@@ -201,7 +205,7 @@ function storeTags() {
 }
 
 function restoreTags() {
-  const notFound: { id: BigInt; title: string; tags: string[] }[] = []
+  const notFound: { id: bigInt.BigInteger; title: string; tags: string[] }[] = []
   oldTags.value.forEach((chatTags) => {
     const chat = chatsStore.chats.find((chat) => chat.id.toString() === chatTags.id.toString())
     if (chat) {
@@ -223,22 +227,6 @@ function restoreTags() {
         ' de ellos. Se han descartado las etiquetas en estos chats.'
     )
   }
-}
-
-async function getPhotos(forceReplace = false) {
-  const chats = forceReplace ? chatsStore.chats : paginatedGroups.value
-  chats.forEach(async (chat) => {
-    if (chat.id && clientStore.client && (!chat.photo || forceReplace)) {
-      // @ts-expect-error
-      const result = await clientStore.client.downloadProfilePhoto(chat.id)
-      if (result) {
-        const base64 = result.toString('base64')
-        if (base64) {
-          chat.photo = 'data:image/jpeg;base64,' + base64
-        }
-      }
-    }
-  })
 }
 
 function toggleCheckAll() {
@@ -279,4 +267,5 @@ const selectedGroups = computed(() => {
 })
 
 getAllChats()
+test()
 </script>

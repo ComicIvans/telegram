@@ -96,11 +96,11 @@
                   <IconUserQuestion v-else class="w-12 h-12" />
                 </div>
               </td>
-              <td>{{ user.first_name + ' ' + user.last_name }}</td>
+              <td>{{ user.firstName + ' ' + user.lastName }}</td>
               <td @click.stop="">
                 <TagSeletor
                   v-model:tags="user.tags"
-                  :name="user.first_name + ' ' + user.last_name"
+                  :name="user.firstName + ' ' + user.lastName"
                   :id="user.id ? user.id.toString() : 'NotFound' + paginatedUsers.indexOf(user)"
                 />
               </td>
@@ -138,7 +138,7 @@ import { useAlertStore } from '@/stores/alertStore'
 import type { Entity } from 'telegram/define'
 import { Api } from 'telegram'
 
-const ROWS_PER_PAGE = 50
+const ROWS_PER_PAGE = 10
 const emit = defineEmits(['toggleSelection'])
 
 const router = useRouter()
@@ -191,8 +191,8 @@ async function getAllUsers(forceReplace = false) {
           await clientStore.client.invoke(
             new Api.contacts.AddContact({
               id: id.users[0].id,
-              firstName: user.first_name,
-              lastName: user.last_name,
+              firstName: user.firstName,
+              lastName: user.lastName,
               phone: user.phone,
               addPhonePrivacyException: false
             })
@@ -204,7 +204,6 @@ async function getAllUsers(forceReplace = false) {
         await result
           .then((entity) => {
             if (entity) {
-              // @ts-expect-error
               user.id = entity.id
               user.failedTelegram = false
               user.telegramError = ''
@@ -246,7 +245,6 @@ async function getPhotos(forceReplace = false) {
   const users = forceReplace ? usersStore.users : paginatedUsers.value
   users.forEach(async (user) => {
     if (user.id && clientStore.client && (!user.photo || forceReplace)) {
-      // @ts-expect-error
       const result = await clientStore.client.downloadProfilePhoto(user.id)
       if (result) {
         const base64 = result.toString('base64')
@@ -277,7 +275,7 @@ function editSelection() {
 
 const filteredUsers = computed(() => {
   return usersStore.users.filter((user) => {
-    return (user.first_name + ' ' + user.last_name)
+    return (user.firstName + ' ' + user.lastName)
       .toLowerCase()
       .includes(searchTerm.value.toLowerCase())
   })
