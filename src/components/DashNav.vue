@@ -43,10 +43,7 @@
         <label tabindex="0" class="m-1 btn btn-circle btn-ghost">
           <IconSettingsFilled class="w-8 h-8" />
         </label>
-        <ul
-          tabindex="0"
-          class="mt-4 p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-52"
-        >
+        <ul tabindex="0" class="mt-4 p-2 shadow menu dropdown-content bg-base-100 rounded-box w-52">
           <li><a @click="logOut">Cerrar sesión</a></li>
           <li>
             <a

@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen flex flex-col bg-base-200">
-    <header class="top-0 left-0 w-full fixed z-10 border-b">
+    <header class="top-0 left-0 w-full fixed z-[1] border-b">
       <DashNav
         :img="logo"
         :title="'Gestión de los grupos de Telegram'"
@@ -27,11 +27,7 @@
               class="input input-bordered rounded-full w-auto mx-2"
             />
             <span v-if="statusLoading" class="loading loading-spinner loading-md"></span>
-            <span
-              v-else
-              class="tooltip z-[10]"
-              data-tip="Actualizar información de chats y usuarios"
-            >
+            <span v-else class="tooltip" data-tip="Actualizar información de chats y usuarios">
               <button @click="" class="btn btn-circle">
                 <IconReload /></button
             ></span>
@@ -59,7 +55,7 @@
             </button>
             <button
               v-if="!statusLoading"
-              class="tooltip mx-4 z-[10]"
+              class="tooltip mx-4"
               :class="`text-${status.type}`"
               :data-tip="status.message"
             >

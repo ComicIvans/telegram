@@ -27,7 +27,7 @@
         </p>
         <button
           @click="editSelection"
-          class="btn btn-success mr-6"
+          class="btn btn-accent mr-6"
           :class="selectionConfirmed ? 'btn-warning' : ''"
         >
           {{ selectionConfirmed ? 'Editar' : 'Confirmar' }}
