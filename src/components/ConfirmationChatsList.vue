@@ -11,8 +11,8 @@
     <p v-if="paginatedChats.length === 0" class="text-center">No se ha encontrado ningún chat</p>
     <div
       v-else
-      v-for="chat in paginatedChats"
-      :key="chat.id.toString()"
+      v-for="(chat, index) in paginatedChats"
+      :key="index"
       class="collapse overflow-visible"
       :class="checkedChat === chat.id.toString() ? 'bg-base-100' : ''"
       @click="() => (checkedChat = chat.id.toString())"

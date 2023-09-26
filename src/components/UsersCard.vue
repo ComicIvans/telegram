@@ -56,8 +56,8 @@
           </thead>
           <tbody>
             <tr
-              v-for="user in paginatedUsers"
-              :key="paginatedUsers.indexOf(user)"
+              v-for="(user, index) in paginatedUsers"
+              :key="index"
               class="hover"
               @click="user.selected = !user.selected"
             >
@@ -101,7 +101,7 @@
                 <TagSeletor
                   v-model:tags="user.tags"
                   :name="user.firstName + ' ' + user.lastName"
-                  :id="user.id ? user.id.toString() : 'NotFound' + paginatedUsers.indexOf(user)"
+                  :id="user.id ? user.id.toString() : 'NotFound' + index"
                 />
               </td>
             </tr>

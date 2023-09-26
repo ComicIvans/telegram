@@ -98,7 +98,7 @@ import {
   IconReload
 } from '@tabler/icons-vue'
 import logo from '@/assets/images/logo.png'
-import { addSelectedUsers, deleteAllUsers } from '@/composables/chatManager'
+import { addSelectedUsers, deleteAllUsers } from '@/utils/chatManager'
 
 const groupsSelected = ref(false)
 const peopleSelected = ref(false)

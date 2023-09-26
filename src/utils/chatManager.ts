@@ -1,4 +1,3 @@
-import { ref } from 'vue'
 import { useChatsStore } from '@/stores/chatsStore'
 import { useUsersStore } from '@/stores/usersStore'
 import { useTelegramClientStore } from '@/stores/telegramClient'
@@ -11,7 +10,11 @@ const usersStore = useUsersStore()
 const clientStore = useTelegramClientStore()
 const totalUsersStore = useTotalUsersStore()
 
-export function getChatsInfo(alsoPhotos = false, alsoParticipants = false, onlySelected = false) {
+export function updateChatsInfo(
+  alsoPhotos = false,
+  alsoParticipants = false,
+  onlySelected = false
+) {
   if (clientStore.client) {
     const chats = onlySelected ? chatsStore.chats.filter((chat) => chat.selected) : chatsStore.chats
     chats.forEach(async (chat) => {
@@ -50,20 +53,25 @@ export async function addSelectedUsers() {
     if (user.id && clientStore.client) {
       const result = await clientStore.client.getEntity(user.id)
       if (result instanceof Api.User) {
-        totalUsersStore.users.push({
-          id: result.id,
-          photo: user.photo,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          // @ts-ignore
-          chats: await Promise.all(
-            chatsStore.chats.map(async (chat) => {
-              const isSelected = chat.selected
-              const isInChat = await isUserInChat(result.id, chat.id)
-              return isSelected && isInChat ? chat.id : null
-            })
-          ).then((chatIds) => chatIds.filter((chatId) => chatId !== null))
-        })
+        const existingUser = totalUsersStore.users.find(
+          (user) => user.id.toString() === result.id.toString()
+        )
+        if (!existingUser) {
+          totalUsersStore.users.push({
+            id: result.id,
+            photo: user.photo,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            // @ts-ignore
+            chats: await Promise.all(
+              chatsStore.chats.map(async (chat) => {
+                const isSelected = chat.selected
+                const isInChat = await isUserInChat(result.id, chat.id)
+                return isSelected && isInChat ? chat.id : null
+              })
+            ).then((chatIds) => chatIds.filter((chatId) => chatId !== null))
+          })
+        }
         console.log(totalUsersStore.users)
       }
     }

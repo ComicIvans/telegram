@@ -1,8 +1,8 @@
 <template>
   <div class="min-w-[100px] max-w-[120px]">
     <div
-      v-for="tag in tags"
-      :key="tags.indexOf(tag)"
+      v-for="(tag, index) in tags"
+      :key="index"
       class="badge h-fit text-center"
       :class="tagColor(tag).isLight ? 'text-gray-950' : 'text-gray-50'"
       :style="{ 'background-color': tagColor(tag).color }"

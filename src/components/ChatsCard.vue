@@ -66,8 +66,8 @@
         </thead>
         <tbody>
           <tr
-            v-for="group in paginatedGroups"
-            :key="paginatedGroups.indexOf(group)"
+            v-for="(group, index) in paginatedGroups"
+            :key="index"
             class="hover"
             @click="group.selected = !group.selected"
           >
@@ -122,7 +122,7 @@ import { useChatsStore } from '@/stores/chatsStore'
 import { IconUsersGroup, IconReload, IconCircleX } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 import { useAlertStore } from '@/stores/alertStore'
-import { getChatsPhotos, test } from '@/composables/chatManager'
+import { getChatsPhotos, test } from '@/utils/chatManager'
 
 const ROWS_PER_PAGE = 10
 const emit = defineEmits(['toggleSelection'])
