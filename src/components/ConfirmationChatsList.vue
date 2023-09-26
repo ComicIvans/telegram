@@ -1,5 +1,5 @@
 <template>
-  <div class="w-11/12 mx-auto">
+  <div class="w-11/12 mx-auto overflow-y-hidden">
     <div class="bg-base-100 mb-4 rounded-xl flex items-center p-2 font-bold text-lg text-center">
       <span class="mx-2 flex-[3]">Chat</span>
       <span class="mx-2 flex-1">Integrantes actuales</span>
@@ -72,12 +72,12 @@
             <span class="text-xl font-medium m-2">{{ user.firstName + ' ' + user.lastName }}</span>
           </div>
           <div class="mx-2 flex-1 grid place-items-center">
-            <button class="text-success tooltip z-[1]" data-tip="Añadir al chat">
+            <button class="text-success tooltip" data-tip="Añadir al chat">
               <IconPlus />
             </button>
           </div>
           <div class="mx-2 flex-1 grid place-items-center">
-            <button class="text-info tooltip z-[1]" data-tip="En espera"><IconZzz /></button>
+            <button class="text-info tooltip" data-tip="En espera"><IconZzz /></button>
           </div>
         </div>
         <div v-if="totalUsersPages > 1" class="divider my-2"></div>
