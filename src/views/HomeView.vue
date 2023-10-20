@@ -26,9 +26,12 @@
               placeholder="Buscar"
               class="input input-bordered rounded-full w-auto mx-2"
             />
-            <span v-if="statusLoading" class="loading loading-spinner loading-md"></span>
+            <span
+              v-if="statusLoading || statusUpdating"
+              class="loading loading-spinner loading-md mx-2"
+            ></span>
             <span v-else class="tooltip" data-tip="Actualizar información de chats y usuarios">
-              <button @click="" class="btn btn-circle">
+              <button @click="reloadAllInfo" class="btn btn-circle">
                 <IconReload /></button
             ></span>
           </div>
@@ -48,13 +51,18 @@
             >
           </div>
           <div class="flex flex-grow"></div>
-          <div class="flex flex-1 flex-row-reverse mr-4">
-            <button class="btn btn-accent" :class="statusLoading ? 'btn-disabled' : ''">
+          <div class="flex flex-1 flex-row-reverse mr-4 items-center">
+            <ConfirmationOptions />
+            <button
+              @click="updateAll()"
+              class="btn btn-accent"
+              :class="statusLoading || statusUpdating ? 'btn-disabled' : ''"
+            >
               Actualizar
               {{ activeTab === 'Chats' ? 'chats' : activeTab === 'Usuarios' ? 'usuarios' : '' }}
             </button>
             <button
-              v-if="!statusLoading"
+              v-if="!statusLoading && !statusUpdating"
               class="tooltip mx-4"
               :class="`text-${status.type}`"
               :data-tip="status.message"
@@ -67,7 +75,8 @@
           </div>
         </nav>
         <div class="divider mx-auto m-2"></div>
-        <ConfirmationChatsList :searchTerm="searchTerm" v-if="activeTab === 'Chats'" />
+        <p v-if="statusLoading" class="font-bold text-xl text-center m-4">Cargando...</p>
+        <ConfirmationChatsList :searchTerm="searchTerm" v-else-if="activeTab === 'Chats'" />
         <ConfirmationUsersList v-else-if="activeTab === 'Usuarios'" />
       </div>
       <div v-else class="flex flex-grow w-10/12 md:justify-center">
@@ -87,6 +96,7 @@ import Footer from '@/components/Footer.vue'
 import Alert from '@/components/Alert.vue'
 import ChatsCard from '@/components/ChatsCard.vue'
 import UsersCard from '@/components/UsersCard.vue'
+import ConfirmationOptions from '@/components/ConfirmationOptions.vue'
 import ConfirmationChatsList from '@/components/ConfirmationChatsList.vue'
 import ConfirmationUsersList from '@/components/ConfirmationUsersList.vue'
 import {
@@ -98,13 +108,20 @@ import {
   IconReload
 } from '@tabler/icons-vue'
 import logo from '@/assets/images/logo.png'
-import { addSelectedUsers, deleteAllUsers } from '@/utils/chatManager'
+import {
+  addSelections,
+  deleteSelections,
+  reloadInfo,
+  confirmActions,
+  test
+} from '@/utils/chatManager'
 
 const groupsSelected = ref(false)
 const peopleSelected = ref(false)
 const activeTab = ref('Chats')
 const searchTerm = ref('')
 const statusLoading = ref(false)
+const statusUpdating = ref(false)
 const status = ref({
   type: 'success',
   message: 'Todo parece correcto'
@@ -113,7 +130,7 @@ const status = ref({
 function cancelSelection() {
   groupsSelected.value = false
   peopleSelected.value = false
-  deleteAllUsers()
+  deleteSelections()
 }
 
 function changeTab(tab: string) {
@@ -124,8 +141,38 @@ watch(
   () => groupsSelected.value && peopleSelected.value,
   (selected) => {
     if (selected) {
-      addSelectedUsers()
+      deleteSelections() // Necesario mientras se esté desarrollando
+      addSelections()
+      reloadAllInfo()
     }
   }
 )
+
+function reloadAllInfo() {
+  statusLoading.value = true
+  reloadInfo(true)
+    .then(() => {
+      status.value = {
+        type: 'success',
+        message: 'Todo parece correcto'
+      }
+    })
+    .catch(() => {
+      status.value = {
+        type: 'warning',
+        message: 'Ha habido algún problema, revisa cada chat para más información'
+      }
+    })
+    .finally(() => {
+      statusLoading.value = false
+    })
+}
+
+async function updateAll() {
+  statusUpdating.value = true
+  await confirmActions()
+  statusUpdating.value = false
+}
+
+test()
 </script>

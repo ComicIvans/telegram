@@ -1,18 +1,13 @@
 <template>
   <div class="min-w-[100px] max-w-[120px]">
-    <div
+    <IndividualTag
       v-for="(tag, index) in tags"
+      :tag="tag"
       :key="index"
-      class="badge h-fit text-center"
-      :class="tagColor(tag).isLight ? 'text-gray-950' : 'text-gray-50'"
-      :style="{ 'background-color': tagColor(tag).color }"
-    >
-      <IconCircleX
-        class="inline-block min-h-4 min-w-fit aspect-square -ml-2 mr-1 stroke-current"
-        @click="updateTag(tag)"
-      />
-      {{ tag }}
-    </div>
+      :removable="true"
+      :colored="true"
+      @updateTag="(tag) => updateTag(tag)"
+    />
     <div>
       <button :onclick="`mod${id.replace('-', '_')}.showModal()`" tabindex="0">
         <IconCirclePlus />
@@ -62,11 +57,12 @@
 </template>
 
 <script setup lang="ts">
-import { IconCirclePlus, IconCircleX, IconX, IconTrash } from '@tabler/icons-vue'
+import { IconCirclePlus, IconX, IconTrash } from '@tabler/icons-vue'
 import { useTagsStore } from '@/stores/tagsStore'
-import uniqolor from 'uniqolor'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useNotification } from '@kyvg/vue3-notification'
+import { useChatsStore } from '@/stores/chatsStore'
+import IndividualTag from '@/components/IndividualTag.vue'
 
 const props = defineProps<{
   id: string
@@ -79,6 +75,7 @@ const emit = defineEmits(['update:tags'])
 const { notify } = useNotification()
 
 const tagsStore = useTagsStore()
+const chatsStore = useChatsStore()
 
 const updateTag = (tag: string) => {
   notify({
@@ -117,11 +114,14 @@ const deleteTag = (tag: string) => {
   if (index !== -1) {
     tagsStore.tags.splice(index, 1)
   }
+  chatsStore.chats.forEach((chat) => {
+    if (chat.tags.includes(tag)) {
+      chat.tags = chat.tags.filter((t) => t !== tag)
+    }
+  })
   notify({
     text: 'Etiqueta eliminada',
     type: 'alert-info'
   })
 }
-
-const tagColor = computed(() => (tag: string) => uniqolor(tag))
 </script>

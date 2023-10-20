@@ -119,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import {
   IconCloudDownload,
   IconUser,
@@ -137,6 +137,7 @@ import { useRouter } from 'vue-router'
 import { useAlertStore } from '@/stores/alertStore'
 import type { Entity } from 'telegram/define'
 import { Api } from 'telegram'
+import { tryit } from 'radash'
 
 const ROWS_PER_PAGE = 10
 const emit = defineEmits(['toggleSelection'])
@@ -177,20 +178,53 @@ async function getAllUsers(forceReplace = false) {
     for (const user of usersStore.users) {
       try {
         let result: Promise<Entity | undefined>
+        let resolvedPhone: Api.contacts.ResolvedPeer | undefined
+        if (user.phone) {
+          try {
+            resolvedPhone = await clientStore.client.invoke(
+              new Api.contacts.ResolvePhone({
+                phone: user.phone
+              })
+            )
+          } catch {}
+        }
         if (user.username) {
           result = clientStore.client.getEntity(user.username)
+          if (
+            resolvedPhone &&
+            resolvedPhone.users &&
+            resolvedPhone.users.length > 0 &&
+            resolvedPhone.users[0].id
+          ) {
+            await clientStore.client.invoke(
+              new Api.contacts.AddContact({
+                id: resolvedPhone.users[0].id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phone: user.phone,
+                addPhonePrivacyException: false
+              })
+            )
+          } else {
+            // TODO: Add contact by username
+            // await clientStore.client.invoke(
+            //   new Api.contacts.AcceptContact({
+            //     id: user.username
+            //   })
+            // )
+          }
         } else if (user.phone) {
-          let id = await clientStore.client.invoke(
-            new Api.contacts.ResolvePhone({
-              phone: user.phone
-            })
-          )
-          if (!id || !id.users || id.users.length === 0 || !id.users[0].id) {
+          if (
+            !resolvedPhone ||
+            !resolvedPhone.users ||
+            resolvedPhone.users.length === 0 ||
+            !resolvedPhone.users[0].id
+          ) {
             throw new Error('No se ha podido encontrar el teléfono')
           }
           await clientStore.client.invoke(
             new Api.contacts.AddContact({
-              id: id.users[0].id,
+              id: resolvedPhone.users[0].id,
               firstName: user.firstName,
               lastName: user.lastName,
               phone: user.phone,
@@ -209,16 +243,19 @@ async function getAllUsers(forceReplace = false) {
               user.telegramError = ''
             } else {
               user.failedTelegram = true
+              user.selected = false
               failedCount++
             }
           })
           .catch((error) => {
             user.failedTelegram = true
+            user.selected = false
             failedCount++
             user.telegramError = error.toString()
           })
       } catch (error) {
         user.failedTelegram = true
+        user.selected = false
         failedCount++
         user.telegramError = 'No se ha podido encontrar al usuario'
       }
@@ -294,6 +331,11 @@ const paginatedUsers = computed(() => {
 const selectedUsers = computed(() => {
   return usersStore.users.filter((user) => user.selected).length
 })
+
+watch(
+  () => usersStore.users.length,
+  () => getAllUsers(true)
+)
 
 getAllUsers()
 </script>

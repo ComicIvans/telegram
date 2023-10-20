@@ -50,7 +50,33 @@ export function useFileSelector(
     parseJsonFile(file)
       .then((data) => {
         if (areUsers(data)) {
-          usersProcessFn(data, usersStore)
+          const duplicatePhones = new Set<string>()
+          const duplicateUsernames = new Set<string>()
+          for (const user of data) {
+            if (!user.phone && !user.username) {
+              fileError.value = true
+              alertStore.error(
+                'No se pueden importar usuarios sin número de teléfono ni nombre de usuario'
+              )
+              break
+            } else {
+              if (duplicatePhones.has(user.phone)) {
+                fileError.value = true
+                alertStore.error('Hay números de teléfono repetidos')
+                break
+              } else {
+                if (user.phone) duplicatePhones.add(user.phone)
+              }
+              if (duplicateUsernames.has(user.username)) {
+                fileError.value = true
+                alertStore.error('Hay nombres de usuario repetidos')
+                break
+              } else {
+                if (user.username) duplicateUsernames.add(user.username)
+              }
+            }
+          }
+          if (!fileError.value) usersProcessFn(data, usersStore)
         } else {
           fileError.value = true
           alertStore.error('El archivo no tiene el formato correcto')

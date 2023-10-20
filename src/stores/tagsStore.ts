@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 
-export const useTagsStore = defineStore('tags', {
+export const useTagsStore = defineStore('tagsStore', {
   state: () => ({
-    tags: ['lol', 'wow'] as string[]
+    tags: [] as string[]
   }),
   persist: true
 })

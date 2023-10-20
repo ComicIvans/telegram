@@ -1,7 +1,7 @@
 <template>
   <div class="bg-base-100 rounded-xl h-fit">
     <h2 class="text-center flex justify-center items-center font-bold text-xl m-6">
-      Grupos y canales disponibles
+      Grupos y canales
     </h2>
     <div class="form-control flex-row items-center">
       <input
@@ -12,19 +12,19 @@
         @input="() => (currentPage = 1)"
       />
       <span v-if="chatsLoading" class="mr-5 loading loading-spinner loading-md"></span>
-      <div v-else class="tooltip" data-tip="Recargar lista de grupos">
+      <div v-else class="tooltip" data-tip="Recargar lista de chats">
         <button @click="getAllChats(true)" class="mr-5 btn btn-circle btn-ghost">
           <IconReload />
         </button>
       </div>
     </div>
-    <div v-if="selectedGroups > 0" class="flex flex-row items-center">
+    <div v-if="selectedChats > 0" class="flex flex-row items-center">
       <button @click="cancelSelection" class="ml-6 btn btn-ghost btn-circle p-1">
         <IconCircleX class="w-7 h-7" />
       </button>
       <p class="mx-2 text-lg flex-grow">
-        {{ selectedGroups }}
-        {{ selectedGroups === 1 ? 'chat seleccionado' : 'chats seleccionados' }}
+        {{ selectedChats }}
+        {{ selectedChats === 1 ? 'chat seleccionado' : 'chats seleccionados' }}
       </p>
       <button
         @click="editSelection"
@@ -36,12 +36,12 @@
     </div>
     <div class="divider mx-auto w-11/12 m-2"></div>
     <i v-if="chatsLoading" class="text-center flex justify-center items-center text-base mx-4 mb-4"
-      >Cargando grupos...</i
+      >Cargando chats...</i
     >
     <i
-      v-else-if="filteredGroups.length === 0"
+      v-else-if="filteredChats.length === 0"
       class="text-center flex justify-center items-center text-base mx-4 mb-4"
-      >No se ha encontrado ningún grupo</i
+      >No se ha encontrado ningún chat</i
     >
     <div v-else class="overflow-x-auto">
       <table class="table">
@@ -66,40 +66,45 @@
         </thead>
         <tbody>
           <tr
-            v-for="(group, index) in paginatedGroups"
+            v-for="(chat, index) in paginatedChats"
             :key="index"
             class="hover"
-            @click="group.selected = !group.selected"
+            @click="chat.selected = chat.isAdmin ? !chat.selected : chat.selected"
           >
             <td>
-              <label>
+              <label
+                :class="!chat.isAdmin ? 'tooltip tooltip-right' : ''"
+                :data-tip="
+                  !chat.isAdmin ? 'No se puede seleccionar porque no eres admin del chat' : ''
+                "
+              >
                 <input
-                  :checked="group.selected"
+                  :checked="chat.selected"
                   type="checkbox"
                   class="checkbox"
-                  :disabled="selectionConfirmed"
+                  :disabled="selectionConfirmed || !chat.isAdmin"
                 />
               </label>
             </td>
             <td class="min-w-[80px]">
               <div
                 class="tooltip"
-                :data-tip="isSupported && copied ? '¡Copiado!' : 'ID: ' + group.id"
+                :data-tip="isSupported && copied ? '¡Copiado!' : 'ID: ' + chat.id"
                 @click.stop="
                   () => {
-                    if (isSupported) copy(group.id.toString())
+                    if (isSupported) copy(chat.id.toString())
                   }
                 "
               >
-                <img v-if="group.photo" class="w-12 h-12 rounded-full" :src="group.photo" />
+                <img v-if="chat.photo" class="w-12 h-12 rounded-full" :src="chat.photo" />
                 <IconUsersGroup v-else class="w-12 h-12" />
               </div>
             </td>
-            <td>{{ group.title }}</td>
+            <td>{{ chat.title }}</td>
             <td @click.stop="">
-              <TagSeletor v-model:tags="group.tags" :name="group.title" :id="group.id.toString()" />
+              <TagSeletor v-model:tags="chat.tags" :name="chat.title" :id="chat.id.toString()" />
             </td>
-            <td>{{ group.type }}</td>
+            <td>{{ chat.type }}</td>
           </tr>
         </tbody>
       </table>
@@ -118,11 +123,11 @@ import TagSeletor from '@/components/TagSelector.vue'
 import PageSelector from '@/components/PageSelector.vue'
 import { useClipboard, usePermission } from '@vueuse/core'
 import { useTelegramClientStore } from '@/stores/telegramClient'
-import { useChatsStore } from '@/stores/chatsStore'
+import { useTotalChatsStore } from '@/stores/totalChatsStore'
 import { IconUsersGroup, IconReload, IconCircleX } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 import { useAlertStore } from '@/stores/alertStore'
-import { getChatsPhotos, test } from '@/utils/chatManager'
+import { updateChatsPhotos } from '@/utils/chatManager'
 
 const ROWS_PER_PAGE = 10
 const emit = defineEmits(['toggleSelection'])
@@ -130,7 +135,7 @@ const emit = defineEmits(['toggleSelection'])
 const router = useRouter()
 
 const clientStore = useTelegramClientStore()
-const chatsStore = useChatsStore()
+const totalChatsStore = useTotalChatsStore()
 const alertStore = useAlertStore()
 
 const checkAll = ref(false)
@@ -151,49 +156,51 @@ async function getAllChats(forceReplace = false) {
   } else {
     if (
       forceReplace ||
-      !chatsStore.date ||
-      chatsStore.chats.length === 0 ||
-      (chatsStore.date && chatsStore.date < Date.now() - 86400000)
+      !totalChatsStore.date ||
+      totalChatsStore.chats.length === 0 ||
+      (totalChatsStore.date && totalChatsStore.date < Date.now() - 86400000)
     ) {
       chatsLoading.value = true
       storeTags()
-      chatsStore.date = Date.now()
-      chatsStore.chats = []
+      totalChatsStore.date = Date.now()
+      totalChatsStore.chats = []
     } else {
       chatsLoading.value = false
       return
     }
     const result = (await clientStore.client.getDialogs()).filter(
-      (chat) => !chat.isUser && chat.title !== ''
+      // @ts-ignore
+      (chat) => !chat.isUser && chat.title !== '' && !chat.deactivated
     )
     result.forEach((chat) => {
       if (chat.entity && chat.title && clientStore.client && chat.id) {
-        chatsStore.chats.push({
+        totalChatsStore.chats.push({
           id: chat.id,
           title: chat.title,
           type: chat.isGroup ? 'Grupo' : chat.isChannel ? 'Canal' : 'Desconocido',
           photo: null,
           // @ts-ignore
-          canAddUsersAsAdmin: chat.entity.adminRights && chat.entity.adminRights.inviteUsers,
-          canAddUsersAsUser: !(
-            // @ts-ignore
-            (chat.entity.defaultBannedRights && chat.entity.defaultBannedRights.inviteUsers)
-          ),
+          isAdmin: chat.entity.adminRights || chat.entity.creator ? true : false,
           selected: false,
-          tags: [],
-          participants: null
+          tags: []
         })
       }
     })
+    // Put the chats with admin rights at the top
+    totalChatsStore.chats.sort((a, b) => {
+      if (a.isAdmin && !b.isAdmin) return -1
+      if (!a.isAdmin && b.isAdmin) return 1
+      return 0
+    })
     restoreTags()
     chatsLoading.value = false
-    getChatsPhotos()
+    updateChatsPhotos(false)
   }
 }
 
 function storeTags() {
   oldTags.value = []
-  chatsStore.chats.forEach((chat) => {
+  totalChatsStore.chats.forEach((chat) => {
     if (chat.tags.length > 0) {
       oldTags.value.push({
         id: chat.id,
@@ -207,7 +214,7 @@ function storeTags() {
 function restoreTags() {
   const notFound: { id: bigInt.BigInteger; title: string; tags: string[] }[] = []
   oldTags.value.forEach((chatTags) => {
-    const chat = chatsStore.chats.find((chat) => chat.id.toString() === chatTags.id.toString())
+    const chat = totalChatsStore.chats.find((chat) => chat.id.toString() === chatTags.id.toString())
     if (chat) {
       chat.tags = chatTags.tags
     } else {
@@ -230,15 +237,16 @@ function restoreTags() {
 }
 
 function toggleCheckAll() {
-  filteredGroups.value.forEach((group) => {
-    group.selected = !checkAll.value
+  filteredChats.value.forEach((chat) => {
+    if (!chat.isAdmin) return
+    chat.selected = !checkAll.value
   })
 }
 
 function cancelSelection() {
   selectionConfirmed.value = false
   checkAll.value = false
-  chatsStore.chats.forEach((chat) => (chat.selected = false))
+  totalChatsStore.chats.forEach((chat) => (chat.selected = false))
 }
 
 function editSelection() {
@@ -246,26 +254,27 @@ function editSelection() {
   emit('toggleSelection', selectionConfirmed.value)
 }
 
-const filteredGroups = computed(() => {
-  return chatsStore.chats.filter((group) => {
-    return group.title.toLowerCase().includes(searchTerm.value.toLowerCase())
+const filteredChats = computed(() => {
+  return totalChatsStore.chats.filter((chat) => {
+    return chat.title.toLowerCase().includes(searchTerm.value.toLowerCase())
   })
 })
 
 const totalPages = computed(() => {
-  return Math.ceil(filteredGroups.value.length / ROWS_PER_PAGE)
+  return Math.ceil(filteredChats.value.length / ROWS_PER_PAGE)
 })
 
-const paginatedGroups = computed(() => {
+const paginatedChats = computed(() => {
   const startIndex = (currentPage.value - 1) * ROWS_PER_PAGE
   const endIndex = startIndex + ROWS_PER_PAGE
-  return filteredGroups.value.slice(startIndex, endIndex)
+  return filteredChats.value.slice(startIndex, endIndex)
 })
 
-const selectedGroups = computed(() => {
-  return chatsStore.chats.filter((chat) => chat.selected).length
+const selectedChats = computed(() => {
+  return totalChatsStore.chats.filter((chat) => chat.selected).length
 })
 
-getAllChats()
-test()
+getAllChats(false)
+
+// TODO: Remove all chats and users when logged in with another account
 </script>
